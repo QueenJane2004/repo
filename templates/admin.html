@@ -3,60 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Library Systems</title>
-
+    <title>Admin Panel | Library System</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
     <style>
         :root {
             --gradient-main: linear-gradient(135deg, #120422 0%, #1e3a8a 50%, #120422 100%);
             --accent-blue: #3b82f6;
-            --soft-white: #f8fafc;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--soft-white);
-            scroll-behavior: smooth;
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
         .main-sidebar { background: var(--gradient-main) !important; }
         .brand-link { border-bottom: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-        .nav-link { color: rgba(255,255,255,0.8) !important; }
+        .nav-link { color: rgba(255,255,255,0.8) !important; transition: 0.2s; }
+        .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.08) !important; }
         .nav-pills .nav-link.active {
-            background: rgba(59, 130, 246, 0.3) !important;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(59,130,246,0.3) !important;
+            border: 1px solid rgba(255,255,255,0.2);
             color: #fff !important;
             font-weight: 600;
         }
-
         .main-header { border-bottom: 1px solid #e2e8f0; background: #ffffff !important; }
         .section-title { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-
         .small-box {
             border-radius: 15px;
             color: white !important;
             background: var(--gradient-main) !important;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
             border: none;
             overflow: hidden;
         }
-
-        .trending-scroll-container {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        .trending-scroll-container::-webkit-scrollbar { width: 5px; }
-        .trending-scroll-container::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
-
-        .direct-chat-messages { height: 400px !important; background: #fff; border-radius: 12px; padding: 20px; }
-        .right .direct-chat-text { background: var(--gradient-main) !important; border: none !important; color: white !important; }
-
+        .card-inventory { border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .modal-content { border-radius: 20px; overflow: hidden; border: none; }
+        .modal-header { background: var(--gradient-main); color: white; }
+        .modal-header .close { color: white; opacity: 1; }
         .btn-gradient {
             background: var(--gradient-main);
             color: white !important;
@@ -66,109 +46,135 @@
             font-weight: 600;
             transition: 0.3s;
         }
-
-        .card-inventory { border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .modal-content { border-radius: 20px; overflow: hidden; border: none; }
-        .modal-header { background: var(--gradient-main); color: white; }
-
-        /* Custom styling for file upload to match your UI */
-        .custom-file-upload {
-            border: 2px dashed #cbd5e1;
-            display: inline-block;
-            padding: 20px;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            border-radius: 15px;
-            background: #f8fafc;
-            transition: 0.3s;
-        }
-        .custom-file-upload:hover { border-color: #3b82f6; background: #eff6ff; }
+        .btn-gradient:hover { opacity: 0.9; transform: translateY(-1px); }
+        .trending-scroll-container { max-height: 400px; overflow-y: auto; }
+        .trending-scroll-container::-webkit-scrollbar { width: 5px; }
+        .trending-scroll-container::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
     </style>
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
 
+    <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars" style="color: #1e3a8a;"></i></a></li>
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars" style="color:#1e3a8a;"></i></a></li>
             <li class="nav-item"><span class="nav-link font-weight-bold section-title">SYSTEM MONITORING</span></li>
         </ul>
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item"><span class="badge badge-pill p-2 mt-2 mr-3 shadow-sm" style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #1e3a8a;"><i class="fas fa-fingerprint mr-1"></i> SECURE ADMIN ACCESS</span></li>
+            <li class="nav-item"><span class="badge badge-pill p-2 mt-2 mr-3 shadow-sm" style="background:#f1f5f9;border:1px solid #e2e8f0;color:#1e3a8a;"><i class="fas fa-fingerprint mr-1"></i> SECURE ADMIN ACCESS</span></li>
         </ul>
     </nav>
 
+    <!-- Sidebar -->
     <aside class="main-sidebar elevation-4">
         <div class="brand-link text-center border-0 py-4">
-            <span class="brand-text font-weight-bold" style="font-size: 1.2rem; letter-spacing: 2px;">LMS <span style="opacity: 0.7;">PORTAL</span></span>
+            <span class="brand-text font-weight-bold" style="font-size:1.2rem;letter-spacing:2px;color:white;">LMS <span style="opacity:0.7;">PORTAL</span></span>
         </div>
         <div class="sidebar">
             <nav class="mt-3">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                     <li class="nav-item">
-                        <a href="/admin" class="nav-link active">
-                            <i class="nav-icon fas fa-chart-pie"></i>
-                            <p>Admin Dashboard</p>
+                        <a href="{{ url_for('admin_dashboard') }}" class="nav-link active">
+                            <i class="nav-icon fas fa-chart-pie"></i><p>Admin Dashboard</p>
                         </a>
                     </li>
                     <li class="nav-header">RESOURCES</li>
                     <li class="nav-item">
                         <a href="#" class="nav-link" data-toggle="modal" data-target="#addBookModal">
-                            <i class="nav-icon fas fa-plus-circle"></i>
-                            <p>Add New Book</p>
+                            <i class="nav-icon fas fa-plus-circle"></i><p>Add New Book</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/manage_books" class="nav-link">
-                            <i class="nav-icon fas fa-book-open"></i>
-                            <p>Manage Books</p>
+                        <a href="{{ url_for('manage_books') }}" class="nav-link">
+                            <i class="nav-icon fas fa-book-open"></i><p>Manage Books</p>
                         </a>
                     </li>
                     <li class="nav-header">DATA & USERS</li>
-                    <li class="nav-item"><a href="/view_users" class="nav-link"><i class="nav-icon fas fa-users"></i><p>View Users</p></a></li>
-                    <li class="nav-item"><a href="/transactions_log" class="nav-link"><i class="nav-icon fas fa-receipt"></i><p>Transactions History</p></a></li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('view_users') }}" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i><p>View Users</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('transactions_log') }}" class="nav-link">
+                            <i class="nav-icon fas fa-receipt"></i><p>Transactions History</p>
+                        </a>
+                    </li>
                     <li class="nav-header">SYSTEM</li>
-                    <li class="nav-item"><a href="/logout" class="nav-link"><i class="nav-icon fas fa-power-off"></i><p>Sign Out</p></a></li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('logout') }}" class="nav-link">
+                            <i class="nav-icon fas fa-power-off"></i><p>Sign Out</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
     </aside>
 
+    <!-- Content -->
     <div class="content-wrapper">
         <div class="content-header">
             <div class="container-fluid">
-                <h1 class="font-weight-bold section-title" style="font-size: 1.8rem;">Operations Overview</h1>
+                <h1 class="font-weight-bold section-title" style="font-size:1.8rem;">Operations Overview</h1>
             </div>
         </div>
 
         <section class="content">
             <div class="container-fluid">
-                <!-- Stat Boxes (Matches image_4ad666.png) -->
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}{% for cat, msg in messages %}
+                        <div class="alert alert-{{ cat }} alert-dismissible fade show rounded">
+                            {{ msg }} <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        </div>
+                    {% endfor %}{% endif %}
+                {% endwith %}
+
+                <!-- Stat Boxes -->
                 <div class="row">
-                    <div class="col-lg-3 col-6"><div class="small-box p-3"><div class="inner"><h3>{{ books_count }}</h3><p>Total Books</p></div><div class="icon"><i class="fas fa-book"></i></div></div></div>
-                    <div class="col-lg-3 col-6"><div class="small-box p-3" style="filter: brightness(1.2);"><div class="inner"><h3>{{ users_count }}</h3><p>Active Users</p></div><div class="icon"><i class="fas fa-user-check"></i></div></div></div>
-                    <div class="col-lg-3 col-6"><div class="small-box p-3" style="filter: brightness(1.4);"><div class="inner"><h3>{{ borrowed_count }}</h3><p>Live Borrows</p></div><div class="icon"><i class="fas fa-clock"></i></div></div></div>
-                    <div class="col-lg-3 col-6"><div class="small-box p-3" style="background: #000 !important; opacity: 0.9;"><div class="inner"><h3>LIVE</h3><p>AI Oversight</p></div><div class="icon"><i class="fas fa-robot"></i></div></div></div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box p-3">
+                            <div class="inner"><h3>{{ books_count }}</h3><p>Total Books</p></div>
+                            <div class="icon"><i class="fas fa-book"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box p-3" style="filter:brightness(1.2);">
+                            <div class="inner"><h3>{{ users_count }}</h3><p>Active Users</p></div>
+                            <div class="icon"><i class="fas fa-user-check"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box p-3" style="filter:brightness(1.4);">
+                            <div class="inner"><h3>{{ borrowed_count }}</h3><p>Live Borrows</p></div>
+                            <div class="icon"><i class="fas fa-clock"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box p-3" style="background:#000 !important;opacity:0.9;">
+                            <div class="inner"><h3>LIVE</h3><p>System Status</p></div>
+                            <div class="icon"><i class="fas fa-robot"></i></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- ML TRENDING ANALYSIS -->
+                <!-- Trending Books -->
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="card card-inventory">
                             <div class="card-header bg-white">
-                                <h3 class="card-title font-weight-bold" style="color: #1e3a8a;">
-                                    <i class="fas fa-fire mr-2 text-danger"></i>ML TRENDING ANALYSIS: Most Borrowed Books
+                                <h3 class="card-title font-weight-bold" style="color:#1e3a8a;">
+                                    <i class="fas fa-fire mr-2 text-danger"></i>Most Borrowed Books
                                 </h3>
                             </div>
                             <div class="card-body">
                                 <div class="trending-scroll-container">
+                                    {% if trending_books %}
                                     <table class="table table-hover table-borderless">
                                         <thead>
                                             <tr class="text-muted text-uppercase small">
-                                                <th>Rank</th>
-                                                <th>Book Title</th>
-                                                <th class="text-right">Popularity Score (Borrows)</th>
+                                                <th>Rank</th><th>Book Title</th><th class="text-right">Borrows</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -185,68 +191,30 @@
                                             {% endfor %}
                                         </tbody>
                                     </table>
+                                    {% else %}
+                                    <p class="text-center text-muted py-4">No borrowing data yet.</p>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- AI INTERACTION & CHART -->
+                <!-- Chart & Recent Users -->
                 <div class="row mt-4">
-                    <div class="col-md-8">
-                        <div class="card card-inventory">
-                            <div class="card-header bg-white py-3 border-0">
-                                <h3 class="card-title font-weight-bold" style="color: #1e3a8a;">
-                                    <i class="fas fa-terminal mr-2"></i>Live User-AI Interaction
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="direct-chat-messages mx-3 mb-3 border shadow-sm" id="admin-chat-content">
-                                    {% for msg in messages %}
-                                    <div class="direct-chat-msg {% if msg.is_admin_reply %}right{% endif %}">
-                                        <div class="direct-chat-infos clearfix">
-                                            <span class="direct-chat-name {% if msg.is_admin_reply %}float-right{% else %}float-left text-primary font-weight-bold{% endif %}"
-                                                  {% if not msg.is_admin_reply %} style="cursor:pointer;" onclick="prepareInterrupt('{{ msg.user_id }}', '{{ msg.sender_name }}')" {% endif %}>
-                                                {{ msg.sender_name }}
-                                                {% if msg.is_admin_reply %}
-                                                    <span class="badge badge-light border ml-1">{% if msg.is_manual %}ADMIN{% else %}AI{% endif %}</span>
-                                                {% endif %}
-                                            </span>
-                                            <span class="direct-chat-timestamp {% if msg.is_admin_reply %}float-left{% else %}float-right{% endif %}">{{ msg.timestamp }}</span>
-                                        </div>
-                                        <div class="direct-chat-text shadow-sm">{{ msg.content }}</div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="card-footer bg-white border-0 pb-4 px-4">
-                                <div class="input-group">
-                                    <input type="hidden" id="target-user-id">
-                                    <input type="text" id="admin-reply-input" placeholder="Select a user to take control..." class="form-control rounded-left bg-light border-0">
-                                    <div class="input-group-append"><button type="button" onclick="sendInterrupt()" class="btn btn-gradient px-4">SEND MANUAL OVERRIDE</button></div>
-                                </div>
-                                <div id="status-hint" class="mt-2 text-xs font-weight-bold text-muted"></div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="col-md-4">
                         <div class="card card-inventory">
-                            <div class="card-header bg-white"><h3 class="card-title font-weight-bold">Inventory Data</h3></div>
-                            <div class="card-body"><canvas id="adminChart" style="min-height: 250px;"></canvas></div>
+                            <div class="card-header bg-white"><h3 class="card-title font-weight-bold">Inventory Overview</h3></div>
+                            <div class="card-body"><canvas id="adminChart" style="min-height:250px;"></canvas></div>
                         </div>
                     </div>
-                </div>
-
-                <!-- RECENT USERS -->
-                <div class="row mt-4">
-                    <div class="col-12">
+                    <div class="col-md-8">
                         <div class="card card-inventory">
                             <div class="card-header border-0 bg-white py-3 d-flex justify-content-between align-items-center">
                                 <h3 class="card-title font-weight-bold"><i class="fas fa-users mr-2 text-primary"></i>Recent Registered Users</h3>
-                                <a href="/view_users" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Detailed List</a>
+                                <a href="{{ url_for('view_users') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</a>
                             </div>
-                            <div class="card-body table-responsive p-0" style="height: 300px;">
+                            <div class="card-body table-responsive p-0" style="max-height:300px;overflow-y:auto;">
                                 <table class="table table-head-fixed text-nowrap table-hover">
                                     <thead><tr><th>ID</th><th>Username</th><th>First Name</th><th>Last Name</th><th>Role</th></tr></thead>
                                     <tbody>
@@ -256,8 +224,10 @@
                                             <td class="font-weight-bold text-primary">{{ user.username }}</td>
                                             <td>{{ user.firstname }}</td>
                                             <td>{{ user.lastname }}</td>
-                                            <td><span class="badge badge-pill border">{% if user.role %}{{ user.role }}{% else %}Member{% endif %}</span></td>
+                                            <td><span class="badge badge-pill border">{{ user.role or 'Member' }}</span></td>
                                         </tr>
+                                        {% else %}
+                                        <tr><td colspan="5" class="text-center text-muted py-3">No users yet.</td></tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -265,61 +235,51 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
     </div>
 </div>
 
-<!-- UPDATED MODAL: MULTIPART ENCTYPE FOR FILE UPLOADS -->
+<!-- Add Book Modal -->
 <div class="modal fade" id="addBookModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <!-- CRITICAL: Added enctype="multipart/form-data" for image uploading -->
-        <form action="/add_book" method="POST" enctype="multipart/form-data" class="modal-content shadow-lg">
+        <form action="{{ url_for('add_book') }}" method="POST" enctype="multipart/form-data" class="modal-content shadow-lg">
             <div class="modal-header">
                 <h5 class="modal-title font-weight-bold"><i class="fas fa-plus-circle mr-2"></i>New Resource Entry</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body p-4">
                 <div class="form-group mb-3">
-                    <label class="small text-uppercase font-weight-bold text-muted">Book Title</label>
-                    <input type="text" name="title" class="form-control rounded-pill border-0 bg-light" placeholder="Title" required>
+                    <label class="small text-uppercase font-weight-bold text-muted">Book Title *</label>
+                    <input type="text" name="title" class="form-control rounded-pill border-0 bg-light" placeholder="e.g. The Great Gatsby" required>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label class="small text-uppercase font-weight-bold text-muted">Author</label>
-                            <input type="text" name="author" class="form-control rounded-pill border-0 bg-light" placeholder="Author" required>
+                            <input type="text" name="author" class="form-control rounded-pill border-0 bg-light" placeholder="Author name">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label class="small text-uppercase font-weight-bold text-muted">Publisher</label>
-                            <input type="text" name="publisher" class="form-control rounded-pill border-0 bg-light" placeholder="Publisher" required>
+                            <input type="text" name="publisher" class="form-control rounded-pill border-0 bg-light" placeholder="Publisher">
                         </div>
                     </div>
                 </div>
-
-                <!-- NEW IMAGE UPLOAD SECTION -->
-                <div class="form-group mb-3">
-                    <label class="small text-uppercase font-weight-bold text-muted">Book Cover Image (JPG/PNG)</label>
-                    <label for="book_image" class="custom-file-upload">
-                        <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
-                        <p class="mb-0 text-muted small" id="file-name">Click to select or drag photo</p>
-                        <input type="file" id="book_image" name="book_image" accept="image/png, image/jpeg" style="display:none;" onchange="updateFileName()">
-                    </label>
-                </div>
-
                 <div class="form-group mb-3">
                     <label class="small text-uppercase font-weight-bold text-muted">Quantity</label>
                     <input type="number" name="quantity" class="form-control rounded-pill border-0 bg-light" value="1" min="1" required>
                 </div>
-
-                <div class="alert alert-info py-2 border-0" style="background: #e0f2fe; color: #0369a1; border-radius: 12px;">
-                    <p class="text-xs mb-0"><i class="fas fa-magic mr-1"></i> <b>ML Processing:</b> The system will auto-generate the <b>barcode</b> and <b>description</b> based on the title and image provided.</p>
+                <div class="form-group mb-3">
+                    <label class="small text-uppercase font-weight-bold text-muted">Cover Image (JPG/PNG)</label>
+                    <input type="file" name="book_image" class="form-control border-0 bg-light" accept="image/*" style="border-radius:10px;padding:8px;">
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="submit" class="btn btn-gradient btn-block py-3">Confirm & Save Entry</button>
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-gradient px-4">Save Book</button>
             </div>
         </form>
     </div>
@@ -329,40 +289,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-    // JS to show selected file name in the modal
-    function updateFileName() {
-        const input = document.getElementById('book_image');
-        const fileNameDisp = document.getElementById('file-name');
-        if (input.files.length > 0) {
-            fileNameDisp.innerText = input.files[0].name;
-            fileNameDisp.style.color = "#1e3a8a";
-            fileNameDisp.style.fontWeight = "bold";
-        }
-    }
-
-    function prepareInterrupt(id, name) {
-        document.getElementById('target-user-id').value = id;
-        document.getElementById('status-hint').innerHTML = `<i class="fas fa-bolt text-warning mr-1"></i> Intervening: <b>${name}</b>`;
-        document.getElementById('admin-reply-input').focus();
-    }
-
-    async function sendInterrupt() {
-        const userId = document.getElementById('target-user-id').value;
-        const msg = document.getElementById('admin-reply-input').value;
-        if(!userId || !msg) return alert("Select a user to override.");
-        const res = await fetch('/ai_chat', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ message: msg, target_user: userId, is_admin: true, is_manual: true })
-        });
-        if(res.ok) location.reload();
-    }
-
-    const chat = document.getElementById('admin-chat-content');
-    if(chat) chat.scrollTop = chat.scrollHeight;
-
     const ctx = document.getElementById('adminChart').getContext('2d');
     new Chart(ctx, {
         type: 'doughnut',

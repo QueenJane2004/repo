@@ -4,19 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Dashboard | Digital Library</title>
-
-    <!-- Bootstrap 5 & Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <style>
         :root {
             --library-blue: #2563eb;
             --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%);
         }
-
         body { background-color: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; overflow-x: hidden; }
-
         .header-bg {
             background: var(--gradient-main);
             height: 280px;
@@ -26,16 +21,8 @@
             z-index: -1;
             border-radius: 0 0 50px 50px;
         }
-
         .navbar-custom { background: transparent; padding: 1.5rem 0; }
-
-        .welcome-text {
-            color: white;
-            text-align: center;
-            padding-top: 2rem;
-            margin-bottom: 3rem;
-        }
-
+        .welcome-text { color: white; text-align: center; padding-top: 2rem; margin-bottom: 3rem; }
         .search-card {
             border-radius: 20px;
             border: none;
@@ -44,11 +31,7 @@
             background: white;
             transition: transform 0.2s;
         }
-
-        .search-card:focus-within {
-            transform: scale(1.01);
-        }
-
+        .search-card:focus-within { transform: scale(1.01); }
         .book-card {
             transition: all 0.3s ease;
             border: none;
@@ -57,19 +40,8 @@
             background: #fff;
             overflow: hidden;
         }
-
-        .book-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-        }
-
-        .book-img {
-            height: 240px;
-            width: 100%;
-            object-fit: cover;
-            background: #e2e8f0;
-        }
-
+        .book-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.12); }
+        .book-img { height: 220px; width: 100%; object-fit: cover; background: #e2e8f0; }
         .recommendation-section {
             background: #fff;
             border-radius: 20px;
@@ -77,77 +49,67 @@
             margin-bottom: 35px;
             border: 1px solid #e2e8f0;
         }
-
-        /* Highlighting match */
-        mark {
-            background: #fef08a;
-            color: #000;
-            padding: 0;
-            border-radius: 2px;
-        }
-
-        /* Chat Widget Styles */
+        mark { background: #fef08a; color: #000; padding: 0; border-radius: 2px; }
         .chat-widget { width: 350px; position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
         #chat-content {
-            height: 350px;
+            height: 320px;
             overflow-y: auto;
             background: #fff;
             display: flex;
             flex-direction: column;
             padding: 15px;
+            gap: 6px;
         }
-
         .msg-user {
             align-self: flex-end;
             background: var(--library-blue);
             color: white;
             border-radius: 15px 15px 0 15px;
             padding: 10px 14px;
-            margin-bottom: 10px;
             font-size: 0.85rem;
             max-width: 85%;
         }
-
-        .msg-admin {
+        .msg-ai {
             align-self: flex-start;
             background: #f1f5f9;
             color: #1e293b;
             border-radius: 15px 15px 15px 0;
             padding: 10px 14px;
-            margin-bottom: 10px;
             font-size: 0.85rem;
             border: 1px solid #e2e8f0;
             max-width: 85%;
         }
-
         .pulse-danger { animation: pulse-red 2s infinite; }
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+            0%   { box-shadow: 0 0 0 0 rgba(220,53,69,0.4); }
+            70%  { box-shadow: 0 0 0 10px rgba(220,53,69,0); }
+            100% { box-shadow: 0 0 0 0 rgba(220,53,69,0); }
         }
     </style>
 </head>
 <body>
-
     <div class="header-bg"></div>
 
     <nav class="navbar navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand fw-bold fs-4" href="/user">
+            <a class="navbar-brand fw-bold fs-5" href="{{ url_for('user_dashboard') }}">
                 <i class="fas fa-book-open-reader me-2"></i>DIGITAL LIBRARY
             </a>
-            <div class="d-flex align-items-center">
-                <a href="/admin/transactions" class="btn btn-outline-light btn-sm me-2 rounded-pill px-3">History</a>
-                <a href="/logout" class="btn btn-light btn-sm rounded-pill px-3 text-primary fw-bold">Logout</a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('transactions_log') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="fas fa-history me-1"></i>History
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-light btn-sm rounded-pill px-3 fw-bold" style="color:#2e1065;">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
             </div>
         </div>
     </nav>
 
     <div class="container mt-2">
         <div class="welcome-text">
-            <h1 class="fw-bold display-5">Hello, {{ session.firstname }}!</h1>
-            <p class="fs-5 opacity-75">What would you like to read today? Your limit: <strong>{{ limit }} books</strong>.</p>
+            <h1 class="fw-bold display-5">Hello, {{ session.firstname }}! 👋</h1>
+            <p class="fs-5 opacity-75">What would you like to read today? Borrow limit: <strong>{{ limit }} books</strong>.</p>
         </div>
 
         <!-- Overdue Fine Alert -->
@@ -158,57 +120,54 @@
             </div>
             <div>
                 <h5 class="alert-heading fw-bold mb-1">Overdue Payment Required!</h5>
-                <p class="mb-0">You have accumulated <strong>₱{{ total_fine }}</strong> in overdue fines. Please settle your account.</p>
+                <p class="mb-0">You have accumulated <strong>₱{{ total_fine }}</strong> in overdue fines. Please settle at the counter.</p>
             </div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
         {% endif %}
 
-        <!-- ENHANCED Search Bar -->
-        <div class="card search-card p-3 mb-5">
-            <div class="row g-2">
-                <div class="col-md-12">
-                    <div class="input-group">
-                        <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" id="liveSearch" class="form-control border-0 bg-transparent shadow-none"
-                               placeholder="Type to search books, authors, or scan barcodes..."
-                               autocomplete="off">
-                        <button class="btn btn-outline-secondary border-0 btn-sm rounded-pill px-3" onclick="clearSearch()">Search</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for cat, msg in messages %}
-                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4">
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
                     {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}{% endif %}
         {% endwith %}
 
-        <!-- Recommendations -->
-        <div id="recommendationPanel">
-            {% if recommendations %}
-            <div class="recommendation-section shadow-sm">
-                <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-sparkles me-2"></i>Picked For You</h5>
-                <div class="row flex-nowrap overflow-auto pb-2">
-                    {% for rec in recommendations %}
-                    <div class="col-6 col-md-3">
-                        <div class="card border-0 bg-light p-2 h-100 shadow-sm">
-                            <img src="{{ rec.image_url or '/static/uploads/books/default_cover.png' }}"
-                                 class="card-img-top rounded mb-2" style="height: 150px; object-fit: cover;">
-                            <h6 class="small fw-bold mb-0 text-truncate">{{ rec.title }}</h6>
-                            <p class="text-muted smaller mb-0">{{ rec.author }}</p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+        <!-- Search Bar -->
+        <div class="card search-card p-3 mb-5">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" id="liveSearch" class="form-control border-0 bg-transparent shadow-none"
+                       placeholder="Search books, authors, publishers or barcodes..."
+                       autocomplete="off">
+                <button class="btn btn-outline-secondary border-0 btn-sm rounded-pill px-3" onclick="clearSearch()">Clear</button>
             </div>
-            {% endif %}
         </div>
 
-        <!-- Collection Section -->
+        <!-- Recommendations -->
+        {% if recommendations %}
+        <div id="recommendationPanel" class="recommendation-section shadow-sm mb-4">
+            <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-star me-2"></i>Picked For You</h5>
+            <div class="row flex-nowrap overflow-auto pb-2">
+                {% for rec in recommendations %}
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 bg-light p-2 h-100 shadow-sm" style="border-radius:12px;">
+                        <img src="{{ rec.image_url or '/static/uploads/books/default_cover.png' }}"
+                             class="card-img-top rounded mb-2"
+                             style="height:140px;object-fit:cover;"
+                             onerror="this.src='/static/uploads/books/default_cover.png'">
+                        <h6 class="small fw-bold mb-0 text-truncate">{{ rec.title }}</h6>
+                        <p class="text-muted small mb-0">{{ rec.author }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Book Collection -->
         <div class="row" id="bookGrid">
             <div class="col-12 mb-4 d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0 text-dark">Library Collection</h4>
@@ -219,46 +178,47 @@
 
             {% for book in books %}
             <div class="col-md-4 col-lg-3 mb-4 book-item"
-                 data-searchable="{{ book.title|lower }} {{ book.author|lower }} {{ book.publisher|lower }} {{ book.barcode }}">
+                 data-searchable="{{ book.title|lower }} {{ book.author|lower }} {{ (book.publisher or '')|lower }} {{ book.barcode or '' }}">
                 <div class="card book-card shadow-sm">
-                    <img src="{{ book.image_url or '/static/uploads/books/default_cover.png' }}" class="book-img p-2" alt="Cover">
+                    <img src="{{ book.image_url or '/static/uploads/books/default_cover.png' }}"
+                         class="book-img p-2"
+                         alt="{{ book.title }}"
+                         onerror="this.src='/static/uploads/books/default_cover.png'">
                     <div class="card-body">
                         <h6 class="fw-bold mb-1 text-truncate searchable-text">{{ book.title }}</h6>
                         <p class="text-muted small mb-1 searchable-text">by {{ book.author }}</p>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <p class="text-uppercase fw-bold text-primary mb-2 searchable-text" style="font-size: 0.65rem;">{{ book.publisher }}</p>
-                            <span class="badge bg-light text-dark border-0 small mb-2 searchable-text" style="font-size: 0.6rem;">
-                                <i class="fas fa-barcode me-1"></i> {{ book.barcode }}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-uppercase fw-bold text-primary searchable-text" style="font-size:0.65rem;">{{ book.publisher }}</span>
+                            <span class="badge bg-light text-dark border-0 searchable-text" style="font-size:0.6rem;">
+                                <i class="fas fa-barcode me-1"></i>{{ book.barcode }}
                             </span>
                         </div>
 
+                        {% if book.description %}
                         <button class="btn btn-link btn-sm p-0 text-decoration-none mb-2"
                                 type="button"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#desc-{{ book.id }}">
-                            Read Description <i class="fas fa-chevron-down ms-1" style="font-size: 0.7rem;"></i>
+                            Description <i class="fas fa-chevron-down ms-1" style="font-size:0.7rem;"></i>
                         </button>
-
-                        <div class="collapse mb-3" id="desc-{{ book.id }}">
-                            <div class="card card-body p-2 border-0 bg-light small text-muted" style="font-size: 0.75rem; line-height: 1.4;">
-                                {{ book.description or "No description available yet." }}
+                        <div class="collapse mb-2" id="desc-{{ book.id }}">
+                            <div class="card card-body p-2 border-0 bg-light small text-muted" style="font-size:0.75rem;line-height:1.4;">
+                                {{ book.description }}
                             </div>
                         </div>
+                        {% endif %}
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge {{ 'bg-success' if book.quantity > 0 else 'bg-danger' }} bg-opacity-10 {{ 'text-success' if book.quantity > 0 else 'text-danger' }} rounded-pill">
+                        <div class="mb-3">
+                            <span class="badge rounded-pill {{ 'bg-success bg-opacity-10 text-success' if book.quantity > 0 else 'bg-danger bg-opacity-10 text-danger' }}">
                                 {{ book.quantity }} Available
                             </span>
                         </div>
 
                         {% if book.quantity > 0 %}
                         <form action="{{ url_for('checkout', book_id=book.id) }}" method="POST">
-                            <div class="input-group input-group-sm mb-2">
-                                <span class="input-group-text bg-light border-0">Qty</span>
-                                <input type="number" name="quantity" class="form-control border-0 bg-light text-center" value="1" min="1" max="{{ book.quantity }}">
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill py-2">Borrow</button>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill py-2">
+                                <i class="fas fa-book me-1"></i>Borrow
+                            </button>
                         </form>
                         {% else %}
                         <button class="btn btn-secondary w-100 rounded-pill py-2" disabled>Out of Stock</button>
@@ -268,9 +228,8 @@
             </div>
             {% endfor %}
 
-            <!-- No results message -->
             <div id="noResults" class="col-12 text-center py-5 d-none">
-                <i class="fas fa-search-minus fs-1 text-muted mb-3"></i>
+                <i class="fas fa-search-minus fs-1 text-muted mb-3 d-block"></i>
                 <h5 class="text-muted">No books found matching your search.</h5>
             </div>
         </div>
@@ -281,77 +240,63 @@
         <div class="collapse shadow-lg mb-2" id="chatCollapse">
             <div class="card border-0 rounded-4 overflow-hidden">
                 <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold small"><i class="fas fa-robot me-2 text-info"></i>AI Support</span>
-                        {% if total_fine > 0 %}
-                        <span class="badge bg-danger ms-2" style="font-size: 0.6rem;">Fines: ₱{{ total_fine }}</span>
-                        {% endif %}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-toggle="collapse" data-bs-target="#chatCollapse"></button>
+                    <span class="fw-bold small"><i class="fas fa-robot me-2 text-info"></i>AI Support</span>
+                    <button type="button" class="btn-close btn-close-white btn-sm" data-bs-toggle="collapse" data-bs-target="#chatCollapse"></button>
                 </div>
-                <div id="chat-content" class="card-body"></div>
+                <div id="chat-content" class="card-body p-0">
+                    <div class="msg-ai">👋 Hello! I can help with borrowing, returns, fines, and book availability.</div>
+                </div>
                 <div class="card-footer bg-white border-0 p-3">
                     <div class="input-group">
-                        <input type="text" id="chat-input" class="form-control border-0 bg-light rounded-pill px-3" placeholder="Ask about fines or books...">
-                        <button class="btn btn-primary rounded-circle ms-2" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                        <input type="text" id="chat-input" class="form-control border-0 bg-light rounded-pill px-3"
+                               placeholder="Ask about fines or books...">
+                        <button class="btn btn-primary rounded-circle ms-2" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-        <button class="btn btn-dark rounded-pill shadow-lg px-4 py-3 w-100 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#chatCollapse">
-            <i class="fas fa-comment-dots me-2"></i> Chat with Librarian
+        <button class="btn btn-dark rounded-pill shadow-lg px-4 py-3 w-100 fw-bold"
+                type="button" data-bs-toggle="collapse" data-bs-target="#chatCollapse">
+            <i class="fas fa-comment-dots me-2"></i>Chat with Librarian
         </button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 1. LIVE SEARCH & HIGHLIGHTING LOGIC
-        const searchInput = document.getElementById('liveSearch');
-        const bookItems = document.querySelectorAll('.book-item');
-        const recPanel = document.getElementById('recommendationPanel');
-        const noResults = document.getElementById('noResults');
-        const resultCountLabel = document.getElementById('resultCount');
+        // Live Search
+        const searchInput  = document.getElementById('liveSearch');
+        const bookItems    = document.querySelectorAll('.book-item');
+        const noResults    = document.getElementById('noResults');
+        const resultCount  = document.getElementById('resultCount');
+        const recPanel     = document.getElementById('recommendationPanel');
 
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             const query = this.value.toLowerCase().trim();
-            let visibleCount = 0;
+            let visible = 0;
 
-            // Hide recommendations if searching to focus on results
-            if (query.length > 0) {
-                recPanel.classList.add('d-none');
-            } else {
-                recPanel.classList.remove('d-none');
-            }
+            if (recPanel) recPanel.style.display = query ? 'none' : '';
 
             bookItems.forEach(item => {
-                const searchData = item.getAttribute('data-searchable');
-                const textElements = item.querySelectorAll('.searchable-text');
+                const data  = item.getAttribute('data-searchable');
+                const texts = item.querySelectorAll('.searchable-text');
+                const match = data.includes(query);
 
-                if (searchData.includes(query)) {
-                    item.classList.remove('d-none');
-                    visibleCount++;
-
-                    // Highlight the query within the card text
-                    textElements.forEach(el => {
-                        const originalText = el.textContent;
-                        if (query !== "") {
-                            const regex = new RegExp(`(${query})`, "gi");
-                            el.innerHTML = originalText.replace(regex, '<mark>$1</mark>');
-                        } else {
-                            el.innerHTML = originalText;
-                        }
+                item.classList.toggle('d-none', !match);
+                if (match) {
+                    visible++;
+                    texts.forEach(el => {
+                        const original = el.textContent;
+                        el.innerHTML = query
+                            ? original.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark>$1</mark>')
+                            : original;
                     });
-                } else {
-                    item.classList.add('d-none');
                 }
             });
 
-            // Update UI based on results
-            resultCountLabel.textContent = `Showing ${visibleCount} items`;
-            if (visibleCount === 0) {
-                noResults.classList.remove('d-none');
-            } else {
-                noResults.classList.add('d-none');
-            }
+            resultCount.textContent = `Showing ${visible} items`;
+            noResults.classList.toggle('d-none', visible > 0);
         });
 
         function clearSearch() {
@@ -359,51 +304,40 @@
             searchInput.dispatchEvent(new Event('input'));
         }
 
-        // 2. AI CHAT SYNC
-        let lastProcessedAlert = sessionStorage.getItem('lastProcessedAlert') || "";
-
-        async function loadMessages() {
-            try {
-                const response = await fetch('/get_messages');
-                const messages = await response.json();
-                const content = document.getElementById('chat-content');
-
-                content.innerHTML = '';
-                messages.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.className = msg.is_admin_reply ? 'msg-admin' : 'msg-user';
-                    div.innerHTML = msg.content;
-                    content.appendChild(div);
-                });
-
-                if (messages.length > 0) {
-                    const latest = messages[messages.length - 1];
-                    if (latest.is_admin_reply && (latest.content.includes("NEW BOOK") || latest.content.includes("OVERDUE")) && latest.content !== lastProcessedAlert) {
-                        sessionStorage.setItem('lastProcessedAlert', latest.content);
-                        window.location.reload();
-                    }
-                }
-                content.scrollTop = content.scrollHeight;
-            } catch (e) { console.error("Sync error"); }
-        }
-
+        // AI Chat
         async function sendMessage() {
             const input = document.getElementById('chat-input');
-            const msg = input.value.trim();
+            const msg   = input.value.trim();
             if (!msg) return;
+
+            const content = document.getElementById('chat-content');
+            const userDiv = document.createElement('div');
+            userDiv.className = 'msg-user';
+            userDiv.textContent = msg;
+            content.appendChild(userDiv);
             input.value = '';
-            await fetch('/ai_chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: msg})
-            });
-            loadMessages();
+            content.scrollTop = content.scrollHeight;
+
+            try {
+                const res  = await fetch('{{ url_for("ai_chat") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'msg-ai';
+                aiDiv.textContent = data.reply || "Sorry, I couldn't process that.";
+                content.appendChild(aiDiv);
+                content.scrollTop = content.scrollHeight;
+            } catch (e) {
+                console.error("Chat error:", e);
+            }
         }
 
-        setInterval(loadMessages, 5000);
-        document.addEventListener('DOMContentLoaded', loadMessages);
-        document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        document.getElementById('chat-input').addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

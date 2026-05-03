@@ -7,63 +7,34 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        /* matching login.html body */
         body {
             background-color: #f8fafc;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
         }
-
-        /* matching login.html wrapper */
         .lms-wrapper {
             background: white;
             width: 100%;
-            max-width: 480px; /* Slightly wider to accommodate side-by-side names */
+            max-width: 480px;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
             margin: 20px;
         }
-
-        /* Top Branding Area matching Login */
         .brand-header {
             background: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%);
             padding: 30px;
             text-align: center;
             color: white;
         }
-
-        .brand-header i {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-        }
-
-        .brand-header h1 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            margin: 0;
-        }
-
-        /* Form Area matching Login */
-        .form-section {
-            padding: 35px;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        .brand-header i  { font-size: 2.5rem; margin-bottom: 5px; display: block; }
+        .brand-header h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+        .brand-header p  { font-size: 0.85rem; opacity: 0.8; margin-top: 5px; margin-bottom: 0; }
+        .form-section    { padding: 35px; }
+        .section-title   { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .form-control, .form-select {
             border: 1px solid #e2e8f0;
             padding: 10px 15px;
@@ -71,14 +42,11 @@
             background-color: #f1f5f9;
             font-size: 0.95rem;
         }
-
         .form-control:focus, .form-select:focus {
             background-color: #fff;
             border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
         }
-
-        /* Button matching login.html btn-login */
         .btn-register {
             background-color: #2e1065;
             color: white;
@@ -88,55 +56,28 @@
             font-weight: 600;
             width: 100%;
             transition: all 0.2s ease;
-            margin-top: 10px;
+            margin-top: 5px;
         }
-
         .btn-register:hover {
             background-color: #1e1b4b;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             color: white;
         }
-
-        /* Footer matching Login */
-        .login-footer {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        .login-footer p {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .login-footer a {
-            color: #3b82f6;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .login-footer a:hover {
-            text-decoration: underline;
-        }
-
-        .alert {
-            border-radius: 10px;
-            font-size: 0.85rem;
-            border: none;
-        }
+        .login-footer { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+        .login-footer p { font-size: 0.9rem; color: #64748b; margin: 0; }
+        .login-footer a { color: #3b82f6; text-decoration: none; font-weight: 600; }
+        .login-footer a:hover { text-decoration: underline; }
+        .alert { border-radius: 10px; font-size: 0.85rem; border: none; }
     </style>
 </head>
 <body>
-
     <div class="lms-wrapper">
         <div class="brand-header">
             <i class="bi bi-person-plus-fill"></i>
             <h1>Member Registration</h1>
-            <p class="small mb-0 opacity-75">Join our digital library community</p>
+            <p>Join our digital library community</p>
         </div>
-
         <div class="form-section">
             <div class="section-title">
                 <i class="bi bi-card-list"></i> Create New Account
@@ -145,12 +86,12 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for cat, msg in messages %}
-                        <div class="alert alert-{{cat}} shadow-sm mb-4">{{msg}}</div>
+                        <div class="alert alert-{{ cat }} shadow-sm mb-3">{{ msg }}</div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
-            <form action="/register" method="POST">
+            <form action="{{ url_for('register') }}" method="POST">
                 <div class="row mb-3">
                     <div class="col-6">
                         <label class="form-label small text-muted">First Name</label>
@@ -161,7 +102,6 @@
                         <input type="text" name="lastname" class="form-control" placeholder="Doe" required>
                     </div>
                 </div>
-
                 <div class="mb-3">
                     <label class="form-label small text-muted">Account Type</label>
                     <select name="role" class="form-select" required>
@@ -169,25 +109,22 @@
                         <option value="Instructor">Instructor</option>
                     </select>
                 </div>
-
                 <div class="mb-3">
                     <label class="form-label small text-muted">Username</label>
                     <input type="text" name="username" class="form-control" placeholder="Create a username" required>
                 </div>
-
                 <div class="mb-4">
                     <label class="form-label small text-muted">Password</label>
                     <input type="password" name="password" class="form-control" placeholder="Create a password" required>
                 </div>
-
-                <button class="btn btn-register">Create Account</button>
+                <button type="submit" class="btn btn-register">Create Account</button>
             </form>
 
             <div class="login-footer">
-                <p>Already have an account? <a href="/login">Login here</a></p>
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
             </div>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

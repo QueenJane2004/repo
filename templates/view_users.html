@@ -3,70 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users | Library Systems</title>
-
-    <!-- Google Fonts & AdminLTE -->
+    <title>Manage Users | Library System</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
     <style>
-        :root {
-            --gradient-main: linear-gradient(135deg, #007bff 0%, #89CFF0 50%, #6f42c1 100%);
-        }
+        :root { --gradient-main: linear-gradient(135deg, #007bff 0%, #89CFF0 50%, #6f42c1 100%); }
         body { background-color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
-        .section-title {
-            background: var(--gradient-main);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-        }
-        .card-custom {
-            border-radius: 20px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-        .table thead th {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            color: #6f42c1;
-        }
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            background: var(--gradient-main);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 10px;
-        }
+        .section-title { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+        .card-custom { border-radius: 20px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        .table thead th { background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: #6f42c1; }
+        .user-avatar { width: 35px; height: 35px; background: var(--gradient-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.8rem; flex-shrink: 0; }
     </style>
 </head>
 <body class="p-4">
-
     <div class="container-fluid">
-        <div class="row mb-4">
+        <div class="row mb-4 align-items-center">
             <div class="col-sm-6">
                 <h1 class="section-title">User Management</h1>
             </div>
             <div class="col-sm-6 text-right">
-                <a href="/admin" class="btn btn-outline-primary rounded-pill shadow-sm">
-                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary rounded-pill shadow-sm mr-2">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger rounded-pill shadow-sm">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
                 </a>
             </div>
         </div>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded">
+                    {{ msg }} <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}{% endif %}
+        {% endwith %}
+
         <div class="card card-custom">
             <div class="card-header bg-white py-3">
                 <h3 class="card-title font-weight-bold text-muted">
-                    <i class="fas fa-id-card mr-2 text-primary"></i> Registered Members
+                    <i class="fas fa-id-card mr-2 text-primary"></i>Registered Members
+                    <span class="badge badge-primary ml-2">{{ all_users|length }}</span>
                 </h3>
             </div>
             <div class="card-body p-0">
@@ -78,7 +56,7 @@
                                 <th>User Info</th>
                                 <th>Username</th>
                                 <th>System Role</th>
-                                <th class="text-center">Account Status</th>
+                                <th class="text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -88,7 +66,7 @@
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
                                         <div class="user-avatar">
-                                            {{ user.firstname[0] | upper }}{{ user.lastname[0] | upper }}
+                                            {{ (user.firstname or 'U')[0]|upper }}{{ (user.lastname or 'U')[0]|upper }}
                                         </div>
                                         <div>
                                             <div class="font-weight-bold">{{ user.firstname }} {{ user.lastname }}</div>
@@ -96,28 +74,26 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="align-middle">
-                                    <code class="text-primary font-weight-bold">@{{ user.username }}</code>
-                                </td>
+                                <td class="align-middle"><code class="text-primary font-weight-bold">@{{ user.username }}</code></td>
                                 <td class="align-middle">
                                     {% if user.role == 'admin' %}
-                                        <span class="badge badge-dark px-3 py-2" style="border-radius: 10px;">
-                                            <i class="fas fa-user-shield mr-1"></i> ADMIN
+                                        <span class="badge badge-dark px-3 py-2" style="border-radius:10px;">
+                                            <i class="fas fa-user-shield mr-1"></i>ADMIN
                                         </span>
                                     {% else %}
-                                        <span class="badge badge-light border px-3 py-2" style="border-radius: 10px;">
-                                            <i class="fas fa-user mr-1"></i> USER
+                                        <span class="badge badge-light border px-3 py-2" style="border-radius:10px;">
+                                            <i class="fas fa-user mr-1"></i>{{ user.role or 'USER' }}
                                         </span>
                                     {% endif %}
                                 </td>
                                 <td class="text-center align-middle">
-                                    <span class="text-success"><i class="fas fa-check-circle mr-1"></i> Active</span>
+                                    <span class="text-success"><i class="fas fa-check-circle mr-1"></i>Active</span>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
                                 <td colspan="5" class="text-center py-5">
-                                    <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                                    <i class="fas fa-users-slash fa-3x text-muted mb-3 d-block" style="opacity:0.3;"></i>
                                     <p class="text-muted">No users found in the database.</p>
                                 </td>
                             </tr>
@@ -129,5 +105,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
