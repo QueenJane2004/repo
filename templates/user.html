@@ -151,7 +151,7 @@
         </div>
 
         <!-- Overdue Fine Alert -->
-        {% if total_fine > 0 %}
+        {% if total_fine is defined and total_fine > 0 %}
         <div class="alert alert-danger pulse-danger border-0 rounded-4 p-4 mb-4 shadow d-flex align-items-center" role="alert">
             <div class="bg-danger text-white rounded-circle p-3 me-4">
                 <i class="fas fa-hand-holding-dollar fs-4"></i>
@@ -160,7 +160,7 @@
                 <h5 class="alert-heading fw-bold mb-1">Overdue Payment Required!</h5>
                 <p class="mb-0">You have accumulated <strong>₱{{ total_fine }}</strong> in overdue fines. Please settle your account.</p>
             </div>
-            <button type="button" class="btn-close ms-auto" data-bs-close="alert"></button>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
         {% endif %}
 
@@ -182,7 +182,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for cat, msg in messages %}
                 <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4">
-                    {{ msg }} <button type="button" class="btn-close" data-bs-close="alert"></button>
+                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}{% endif %}
         {% endwith %}
@@ -253,7 +253,7 @@
                         </div>
 
                         {% if book.quantity > 0 %}
-                        <form action="{{ url_for('checkout_book', book_id=book.id) }}" method="POST">
+                        <form action="{{ url_for('checkout', book_id=book.id) }}" method="POST">
                             <div class="input-group input-group-sm mb-2">
                                 <span class="input-group-text bg-light border-0">Qty</span>
                                 <input type="number" name="quantity" class="form-control border-0 bg-light text-center" value="1" min="1" max="{{ book.quantity }}">
