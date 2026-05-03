@@ -1,0 +1,8 @@
+library.db
+db.sqlite3
+db.sqlite3-shm
+db.sqlite3-wal
+Library.zip
+explanation.docx
+__pycache__/
+*.pyc
