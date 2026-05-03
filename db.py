@@ -8,7 +8,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 def get_conn():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL environment variable is missing.")
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row, sslmode="require")
+    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
 
 
 def init_db():
@@ -53,15 +53,18 @@ def init_db():
                 )
             """)
 
-            # Add isbn column if missing (for existing deployments)
+            # FIX: messages table was missing — caused 500 on admin dashboard
             cur.execute("""
-                ALTER TABLE books ADD COLUMN IF NOT EXISTS isbn TEXT;
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                    content TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
             """)
 
-            # Ensure fine_amount column exists (for existing deployments)
-            cur.execute("""
-                ALTER TABLE loans ADD COLUMN IF NOT EXISTS fine_amount REAL DEFAULT 0;
-            """)
+            cur.execute("ALTER TABLE books ADD COLUMN IF NOT EXISTS isbn TEXT;")
+            cur.execute("ALTER TABLE loans ADD COLUMN IF NOT EXISTS fine_amount REAL DEFAULT 0;")
 
         conn.commit()
 
@@ -79,5 +82,7 @@ def query_db(query, args=(), one=False):
                     conn.commit()
                     return None
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"DB ERROR: {e}")
         return None if one else []
