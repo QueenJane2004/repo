@@ -7,17 +7,12 @@ import re
 import db
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "fallback_secret")
+app.secret_key = "library_super_secret_key"
 
-# INIT DB SAFELY
-try:
-    db.init_db()
-except Exception as e:
-    print("DB INIT ERROR:", e)
-
+db.init_db()
 
 # =========================
-# CHATBOT
+# CHATBOT RULES
 # =========================
 
 CHAT_RULES = [
@@ -27,18 +22,18 @@ CHAT_RULES = [
     (r'\b(return)\b', "Return books at the library counter."),
 ]
 
-COMPILED_RULES = [(re.compile(p, re.I), r) for p, r in CHAT_RULES]
+COMPILED_RULES = [(re.compile(p, re.IGNORECASE), r) for p, r in CHAT_RULES]
 
 
 def rule_based_reply(msg):
     for p, r in COMPILED_RULES:
         if p.search(msg):
             return r
-    return "Ask me about books, borrowing, or fines."
+    return "Ask me about borrowing, books, or fines."
 
 
 # =========================
-# ROUTES
+# HOME
 # =========================
 
 @app.route('/')
@@ -46,32 +41,37 @@ def index():
     return redirect(url_for('login'))
 
 
+# =========================
+# LOGIN
+# =========================
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        try:
-            user = db.query_db(
-                "SELECT * FROM users WHERE username = ? AND password = ?",
-                (request.form.get('username'), request.form.get('password')),
-                one=True
-            )
+        user = db.query_db(
+            "SELECT * FROM users WHERE username = %s AND password = %s",
+            (request.form.get('username'), request.form.get('password')),
+            one=True
+        )
 
-            if user:
-                session['user_id'] = user['id']
-                session['username'] = user['username']
-                session['role'] = user['role']
-                session['firstname'] = user.get('firstname', 'User')
+        if user:
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['role'] = user['role']
+            session['firstname'] = user.get('firstname', 'User')
 
-                return redirect('/user')
+            return redirect(url_for(
+                'admin_dashboard' if user['role'] == 'admin' else 'user_dashboard'
+            ))
 
-            flash("Invalid credentials", "danger")
-
-        except Exception as e:
-            print("LOGIN ERROR:", e)
-            flash("Server error", "danger")
+        flash("Invalid credentials", "danger")
 
     return render_template('login.html')
 
+
+# =========================
+# REGISTER
+# =========================
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -79,7 +79,7 @@ def register():
         try:
             db.query_db("""
                 INSERT INTO users (username, password, firstname, lastname, role)
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s)
             """, (
                 request.form.get('username'),
                 request.form.get('password'),
@@ -89,7 +89,7 @@ def register():
             ))
 
             flash("Registered successfully", "success")
-            return redirect('/login')
+            return redirect(url_for('login'))
 
         except Exception as e:
             print("REGISTER ERROR:", e)
@@ -98,33 +98,84 @@ def register():
     return render_template('register.html')
 
 
+# =========================
+# ADMIN DASHBOARD
+# =========================
+
+@app.route('/admin')
+def admin_dashboard():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    return render_template('admin.html',
+        users=db.query_db("SELECT COUNT(*) as c FROM users", one=True)['c'],
+        books=db.query_db("SELECT COUNT(*) as c FROM books", one=True)['c'],
+        loans=db.query_db("SELECT COUNT(*) as c FROM loans WHERE return_date IS NULL", one=True)['c'],
+        all_users=db.query_db("SELECT * FROM users"),
+        books_list=db.query_db("SELECT * FROM books ORDER BY id DESC")
+    )
+
+
+# =========================
+# USER DASHBOARD (FIXED ERROR HERE)
+# =========================
+
 @app.route('/user')
 def user_dashboard():
     if not session.get('user_id'):
-        return redirect('/login')
+        return redirect(url_for('login'))
 
-    books = db.query_db("SELECT * FROM books ORDER BY id DESC") or []
+    user_id = session['user_id']
 
-    return render_template('user.html', books=books)
+    books = db.query_db("SELECT * FROM books ORDER BY id DESC")
 
+    # FIX: prevent UndefinedError in Jinja
+    total_fine = db.query_db("""
+        SELECT COALESCE(SUM(fine_amount), 0) AS total
+        FROM loans
+        WHERE user_id = %s AND return_date IS NULL
+    """, (user_id,), one=True)
+
+    total_fine = total_fine['total'] if total_fine else 0
+
+    return render_template(
+        'user.html',
+        books=books,
+        total_fine=total_fine,
+        limit=5
+    )
+
+
+# =========================
+# ADD BOOK
+# =========================
 
 @app.route('/add_book', methods=['POST'])
 def add_book():
     if session.get('role') != 'admin':
-        return redirect('/login')
+        return redirect(url_for('login'))
+
+    title = request.form.get('title')
+    author = request.form.get('author')
+
+    if not title or not author:
+        flash("Title and Author required", "danger")
+        return redirect('/admin')
+
+    barcode = ''.join(random.choices(string.digits, k=13))
 
     try:
         db.query_db("""
             INSERT INTO books (title, author, publisher, image_url, description, barcode, quantity, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
         """, (
-            request.form.get('title'),
-            request.form.get('author'),
+            title,
+            author,
             request.form.get('publisher', 'Unknown'),
             '/static/uploads/default.png',
-            request.form.get('title') + " book",
-            ''.join(random.choices(string.digits, k=13)),
-            int(request.form.get('quantity', 1)),
+            f"{title} by {author}",
+            barcode,
+            request.form.get('quantity', 1),
             'Available'
         ))
 
@@ -134,15 +185,23 @@ def add_book():
         print("ADD BOOK ERROR:", e)
         flash("Error adding book", "danger")
 
-    return redirect('/user')
+    return redirect('/admin')
 
+
+# =========================
+# CHECKOUT
+# =========================
 
 @app.route('/checkout/<int:book_id>', methods=['POST'])
 def checkout(book_id):
     if not session.get('user_id'):
-        return redirect('/login')
+        return redirect(url_for('login'))
 
-    book = db.query_db("SELECT * FROM books WHERE id = ?", (book_id,), one=True)
+    book = db.query_db(
+        "SELECT * FROM books WHERE id = %s",
+        (book_id,),
+        one=True
+    )
 
     if not book:
         flash("Book not found", "danger")
@@ -154,7 +213,7 @@ def checkout(book_id):
 
     db.query_db("""
         INSERT INTO loans (book_id, user_id, issue_date, due_date)
-        VALUES (?, ?, ?, ?)
+        VALUES (%s,%s,%s,%s)
     """, (
         book_id,
         session['user_id'],
@@ -163,7 +222,7 @@ def checkout(book_id):
     ))
 
     db.query_db(
-        "UPDATE books SET quantity = quantity - 1 WHERE id = ?",
+        "UPDATE books SET quantity = quantity - 1 WHERE id = %s",
         (book_id,)
     )
 
@@ -171,17 +230,29 @@ def checkout(book_id):
     return redirect('/user')
 
 
+# =========================
+# CHAT
+# =========================
+
 @app.route('/ai_chat', methods=['POST'])
 def ai_chat():
     msg = request.json.get('message', '')
     return jsonify({"reply": rule_based_reply(msg)})
 
 
+# =========================
+# LOGOUT
+# =========================
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/login')
 
+
+# =========================
+# RUN
+# =========================
 
 if __name__ == '__main__':
     app.run(debug=True)
