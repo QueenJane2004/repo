@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users | Library Systems</title>
+
+    <!-- Google Fonts & AdminLTE -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+
+    <style>
+        :root {
+            --gradient-main: linear-gradient(135deg, #007bff 0%, #89CFF0 50%, #6f42c1 100%);
+        }
+        body { background-color: #f4f6f9; font-family: 'Source Sans Pro', sans-serif; }
+        .section-title {
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        .card-custom {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #6f42c1;
+        }
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--gradient-main);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-sm-6">
+                <h1 class="section-title">User Management</h1>
+            </div>
+            <div class="col-sm-6 text-right">
+                <a href="/admin" class="btn btn-outline-primary rounded-pill shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card card-custom">
+            <div class="card-header bg-white py-3">
+                <h3 class="card-title font-weight-bold text-muted">
+                    <i class="fas fa-id-card mr-2 text-primary"></i> Registered Members
+                </h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="pl-4">ID</th>
+                                <th>User Info</th>
+                                <th>Username</th>
+                                <th>System Role</th>
+                                <th class="text-center">Account Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in all_users %}
+                            <tr>
+                                <td class="pl-4 align-middle">#{{ user.id }}</td>
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar">
+                                            {{ user.firstname[0] | upper }}{{ user.lastname[0] | upper }}
+                                        </div>
+                                        <div>
+                                            <div class="font-weight-bold">{{ user.firstname }} {{ user.lastname }}</div>
+                                            <small class="text-muted">Registered Member</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <code class="text-primary font-weight-bold">@{{ user.username }}</code>
+                                </td>
+                                <td class="align-middle">
+                                    {% if user.role == 'admin' %}
+                                        <span class="badge badge-dark px-3 py-2" style="border-radius: 10px;">
+                                            <i class="fas fa-user-shield mr-1"></i> ADMIN
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-light border px-3 py-2" style="border-radius: 10px;">
+                                            <i class="fas fa-user mr-1"></i> USER
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center align-middle">
+                                    <span class="text-success"><i class="fas fa-check-circle mr-1"></i> Active</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No users found in the database.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
