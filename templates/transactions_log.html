@@ -29,6 +29,7 @@
               <th>Due Date</th>
               <th>Return Date</th>
               <th>Status</th>
+              <th>Fine</th>
             </tr>
           </thead>
           <tbody>
@@ -49,11 +50,18 @@
                     <span class="badge-status badge-active"><i class="fas fa-clock"></i> Active Loan</span>
                   {% endif %}
                 </td>
+                <td>
+                  {% if tx.fine_amount and tx.fine_amount > 0 %}
+                    ₱{{ "%.2f"|format(tx.fine_amount) }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
               </tr>
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="6" class="text-center text-muted">No borrowing history found.</td>
+                <td colspan="7" class="text-center text-muted">No borrowing history found.</td>
               </tr>
             {% endif %}
           </tbody>
