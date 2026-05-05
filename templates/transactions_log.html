@@ -1,183 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transactions | Digital Library</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
-        body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-        .sidebar {
-            width: 240px; min-height: 100vh;
-            background: var(--gradient-main);
-            position: fixed; top: 0; left: 0;
-            z-index: 100; padding: 2rem 1rem;
-            display: flex; flex-direction: column;
-        }
-        .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.75); border-radius: 12px;
-            padding: 0.75rem 1rem; margin-bottom: 4px;
-            transition: all 0.2s; font-size: 0.9rem;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background: rgba(255,255,255,0.15); color: white;
-        }
-        .sidebar .nav-link i { width: 20px; }
-        .main-content { margin-left: 240px; padding: 2rem; }
-        /* For non-admin (user), no sidebar */
-        .user-nav {
-            background: var(--gradient-main);
-            padding: 1rem 0;
-        }
-        .section-card {
-            background: white; border: none;
-            border-radius: 18px; padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-        }
-        .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
-        .status-badge { font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; }
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; min-height: auto; position: relative; }
-            .main-content { margin-left: 0; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity Logs | Digital Library</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
+    body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .sidebar {
+      width: 240px; min-height: 100vh;
+      background: var(--gradient-main);
+      position: fixed; top: 0; left: 0;
+      z-index: 100; padding: 2rem 1rem;
+      display: flex; flex-direction: column;
+    }
+    .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
+    .sidebar .nav-link {
+      color: rgba(255,255,255,0.75); border-radius: 12px;
+      padding: 0.75rem 1rem; margin-bottom: 4px;
+      transition: all 0.2s; font-size: 0.9rem;
+    }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      background: rgba(255,255,255,0.15); color: white;
+    }
+    .sidebar .nav-link i { width: 20px; }
+    .main-content { margin-left: 240px; padding: 2rem; }
+    .user-nav { background: var(--gradient-main); padding: 1rem 0; }
+    .section-card {
+      background: white; border: none;
+      border-radius: 18px; padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+    .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
+    .status-badge { font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; }
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; min-height: auto; position: relative; }
+      .main-content { margin-left: 0; }
+    }
+  </style>
 </head>
 <body>
 
-{% if is_admin %}
-    <!-- Admin Sidebar -->
-    <div class="sidebar">
-        <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
-        <nav class="nav flex-column">
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
-                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-            </a>
-            <a href="{{ url_for('manage_books') }}" class="nav-link">
-                <i class="fas fa-books me-2"></i>Manage Books
-            </a>
-            <a href="{{ url_for('view_users') }}" class="nav-link">
-                <i class="fas fa-users me-2"></i>Users
-            </a>
-            <a href="{{ url_for('transactions_log') }}" class="nav-link active">
-                <i class="fas fa-history me-2"></i>Transactions
-            </a>
-        </nav>
-        <div class="mt-auto pt-3">
-            <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
-                <i class="fas fa-sign-out-alt me-2"></i>Logout
-            </a>
-        </div>
+<!-- Example: User Navbar -->
+<nav class="navbar navbar-dark user-nav mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">
+      <i class="fas fa-book-open-reader me-2"></i>DIGITAL LIBRARY
+    </a>
+    <div class="d-flex gap-2">
+      <a href="#" class="btn btn-outline-light btn-sm rounded-pill px-3">
+        <i class="fas fa-home me-1"></i>Dashboard
+      </a>
+      <a href="#" class="btn btn-light btn-sm rounded-pill px-3 fw-bold" style="color:#2e1065;">
+        <i class="fas fa-sign-out-alt me-1"></i>Logout
+      </a>
     </div>
-    <div class="main-content">
-{% else %}
-    <!-- User navbar -->
-    <nav class="navbar navbar-dark user-nav mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('user_dashboard') }}">
-                <i class="fas fa-book-open-reader me-2"></i>DIGITAL LIBRARY
-            </a>
-            <div class="d-flex gap-2">
-                <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                    <i class="fas fa-home me-1"></i>Dashboard
-                </a>
-                <a href="{{ url_for('logout') }}" class="btn btn-light btn-sm rounded-pill px-3 fw-bold" style="color:#2e1065;">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
-                </a>
-            </div>
-        </div>
-    </nav>
-    <div class="container">
-{% endif %}
+  </div>
+</nav>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold mb-0">
-                <i class="fas fa-history me-2 text-primary"></i>
-                {% if is_admin %}All Transactions{% else %}My Borrowing History{% endif %}
-            </h4>
-            <span class="badge bg-white text-dark shadow-sm border p-2 px-3 rounded-pill">
-                {{ transactions|length }} records
-            </span>
-        </div>
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+      <i class="fas fa-clipboard-list me-2 text-primary"></i>
+      Activity Logs
+    </h4>
+    <span class="badge bg-white text-dark shadow-sm border p-2 px-3 rounded-pill">
+      3 records
+    </span>
+  </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}{% for cat, msg in messages %}
-                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
-                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}{% endif %}
-        {% endwith %}
-
-        <div class="section-card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            {% if is_admin %}<th>Member</th>{% endif %}
-                            <th>Book</th>
-                            <th>Author</th>
-                            <th>Borrowed</th>
-                            <th>Due</th>
-                            <th>Returned</th>
-                            <th>Fine</th>
-                            <th>Status</th>
-                            {% if is_admin %}<th>Action</th>{% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for t in transactions %}
-                        <tr>
-                            {% if is_admin %}
-                            <td class="small fw-semibold">{{ t.user_name }}</td>
-                            {% endif %}
-                            <td class="fw-semibold small">{{ t.book_title }}</td>
-                            <td class="text-muted small">{{ t.book_author }}</td>
-                            <td class="small">{{ t.issue_date }}</td>
-                            <td class="small">{{ t.due_date }}</td>
-                            <td class="small">{{ t.return_date or '—' }}</td>
-                            <td>
-                                {% if t.fine_amount and t.fine_amount > 0 %}
-                                <span class="text-danger fw-bold small">₱{{ t.fine_amount }}</span>
-                                {% else %}
-                                <span class="text-muted small">₱0</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if t.return_date %}
-                                    <span class="badge bg-success bg-opacity-10 text-success status-badge">Returned</span>
-                                {% else %}
-                                    <span class="badge bg-warning bg-opacity-10 text-warning status-badge">Active</span>
-                                {% endif %}
-                            </td>
-                            {% if is_admin %}
-                            <td>
-                                {% if not t.return_date %}
-                                <form action="{{ url_for('return_book', loan_id=t.id) }}" method="POST">
-                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                        <i class="fas fa-undo me-1"></i>Return
-                                    </button>
-                                </form>
-                                {% else %}
-                                <span class="text-muted small">—</span>
-                                {% endif %}
-                            </td>
-                            {% endif %}
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="{% if is_admin %}9{% else %}7{% endif %}" class="text-center text-muted py-4">No transactions found.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-{% if is_admin %}
+  <div class="section-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>Details</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Example static rows -->
+          <tr>
+            <td>May 05, 2026 09:00 PM</td>
+            <td><i class="fas fa-book me-1 text-success"></i>Borrowed Book</td>
+            <td>"The Great Gatsby" by F. Scott Fitzgerald</td>
+            <td><span class="badge bg-success bg-opacity-10 text-success status-badge">Success</span></td>
+          </tr>
+          <tr>
+            <td>May 04, 2026 03:15 PM</td>
+            <td><i class="fas fa-book-open me-1 text-info"></i>Returned Book</td>
+            <td>"1984" by George Orwell</td>
+            <td><span class="badge bg-success bg-opacity-10 text-success status-badge">Success</span></td>
+          </tr>
+          <tr>
+            <td>May 03, 2026 11:45 AM</td>
+            <td><i class="fas fa-sign-in-alt me-1 text-warning"></i>Login Attempt</td>
+            <td>Incorrect password entered</td>
+            <td><span class="badge bg-danger bg-opacity-10 text-danger status-badge">Failed</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-{% else %}
-    </div>
-{% endif %}
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
