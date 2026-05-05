@@ -185,6 +185,28 @@ def user_dashboard():
         limit=limit,
         recommendations=recommendations
     )
+from datetime import datetime
+
+@app.route("/transactions_log")
+@login_required
+def transactions_log():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    transactions = query_db("""
+        SELECT b.title, b.author, l.issue_date, l.due_date, l.return_date, l.fine_amount
+        FROM loans l
+        JOIN books b ON l.book_id = b.id
+        WHERE l.user_id = %s
+        ORDER BY l.issue_date DESC
+    """, (user_id,))
+    
+    return render_template(
+        "transactions_log.html",
+        transactions=transactions,
+        current_date=datetime.now().date()
+    )
 
 
 @app.route('/checkout/<int:book_id>', methods=['POST'])
