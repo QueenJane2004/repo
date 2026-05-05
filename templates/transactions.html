@@ -29,31 +29,39 @@
               <th>Due Date</th>
               <th>Return Date</th>
               <th>Status</th>
+              <th>Fine</th>
             </tr>
           </thead>
           <tbody>
-            {% if transactions %}
-              {% for tx in transactions %}
+            {% if loans %}
+              {% for loan in loans %}
               <tr>
-                <td>{{ tx.title }}</td>
-                <td>{{ tx.author }}</td>
-                <td>{{ tx.issue_date }}</td>
-                <td>{{ tx.due_date }}</td>
-                <td>{{ tx.return_date if tx.return_date else "—" }}</td>
+                <td>{{ loan.title }}</td>
+                <td>{{ loan.author }}</td>
+                <td>{{ loan.issue_date }}</td>
+                <td>{{ loan.due_date }}</td>
+                <td>{{ loan.return_date if loan.return_date else "—" }}</td>
                 <td>
-                  {% if tx.return_date %}
+                  {% if loan.return_date %}
                     <span class="badge-status badge-returned"><i class="fas fa-check-circle"></i> Returned</span>
-                  {% elif tx.due_date and tx.due_date < current_date %}
+                  {% elif loan.due_date and loan.due_date < current_date %}
                     <span class="badge-status badge-overdue"><i class="fas fa-exclamation-circle"></i> Overdue</span>
                   {% else %}
                     <span class="badge-status badge-active"><i class="fas fa-clock"></i> Active Loan</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if loan.fine_amount and loan.fine_amount > 0 %}
+                    ₱{{ "%.2f"|format(loan.fine_amount) }}
+                  {% else %}
+                    —
                   {% endif %}
                 </td>
               </tr>
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="6" class="text-center text-muted">No borrowing history found.</td>
+                <td colspan="7" class="text-center text-muted">No borrowing history found.</td>
               </tr>
             {% endif %}
           </tbody>
