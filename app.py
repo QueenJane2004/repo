@@ -186,6 +186,22 @@ def user_dashboard():
         recommendations=recommendations
     )
 
+@app.route("/transactions_log")
+@login_required
+def transactions_log():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    transactions = db.query_db("""
+        SELECT b.title, b.author, l.issue_date, l.due_date, l.return_date
+        FROM loans l
+        JOIN books b ON l.book_id = b.id
+        WHERE l.user_id = %s
+        ORDER BY l.issue_date DESC
+    """, (user_id,))
+    
+    return render_template("transactions_log.html", transactions=transactions)
 
 @app.route('/checkout/<int:book_id>', methods=['POST'])
 @login_required
