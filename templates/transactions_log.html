@@ -38,7 +38,7 @@
   <!-- Back to Dashboard -->
   <nav class="navbar navbar-dark navbar-custom">
     <div class="container d-flex justify-content-between align-items-center">
-      <a class="home-icon-link" href="user_dashboard.html" title="Back to Dashboard">
+      <a class="home-icon-link" href="{{ url_for('user_dashboard') }}" title="Back to Dashboard">
         <i class="fas fa-home"></i>
       </a>
       <span class="text-white fw-bold">My Borrowing History</span>
@@ -69,28 +69,27 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Example static rows -->
-            <tr>
-              <td>The Great Gatsby</td>
-              <td>F. Scott Fitzgerald</td>
-              <td>2026-05-01</td>
-              <td>—</td>
-              <td><span class="badge-status badge-active"><i class="fas fa-clock"></i> Active Loan</span></td>
-            </tr>
-            <tr>
-              <td>1984</td>
-              <td>George Orwell</td>
-              <td>2026-04-20</td>
-              <td>2026-05-03</td>
-              <td><span class="badge-status badge-returned"><i class="fas fa-check-circle"></i> Returned</span></td>
-            </tr>
-            <tr>
-              <td>To Kill a Mockingbird</td>
-              <td>Harper Lee</td>
-              <td>2026-03-15</td>
-              <td>2026-03-28</td>
-              <td><span class="badge-status badge-returned"><i class="fas fa-check-circle"></i> Returned</span></td>
-            </tr>
+            {% if loans %}
+              {% for loan in loans %}
+              <tr>
+                <td>{{ loan.title }}</td>
+                <td>{{ loan.author }}</td>
+                <td>{{ loan.issue_date }}</td>
+                <td>{{ loan.return_date if loan.return_date else "—" }}</td>
+                <td>
+                  {% if loan.return_date %}
+                    <span class="badge-status badge-returned"><i class="fas fa-check-circle"></i> Returned</span>
+                  {% else %}
+                    <span class="badge-status badge-active"><i class="fas fa-clock"></i> Active Loan</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">No borrowing history found.</td>
+              </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
