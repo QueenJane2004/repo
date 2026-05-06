@@ -237,10 +237,26 @@ def user_dashboard():
 
 
 
+from flask import request, jsonify
+
 @app.route('/ai_chat', methods=['POST'])
 def ai_chat():
-    # This placeholder prevents the 'BuildError' in user.html
-    return {"response": "AI feature is currently in development."}
+    # 1. Extract the user message from the request
+    data = request.get_json()
+    user_message = data.get('message', '')
+
+    if not user_message:
+        return jsonify({"error": "No message provided"}), 400
+
+    try:
+        # 2. Integration logic (e.g., calling an AI model) would go here
+        # For now, we'll simulate a response
+        bot_response = f"You said: {user_message}. This is where the AI logic lives!"
+        
+        return jsonify({"response": bot_response})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
