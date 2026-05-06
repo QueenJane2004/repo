@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Activity Logs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8fafc; padding: 2rem; }
+        .log-table { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .badge-action { text-transform: uppercase; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+    <div class="d-flex justify-content-between mb-4">
+        <h2 class="fw-bold">System Activity Logs</h2>
+        <button class="btn btn-primary" onclick="window.print()">Export PDF</button>
+    </div>
+
+    <div class="log-table">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User Information</th>
+                    <th>Action</th>
+                    <th>Affected Record</th>
+                    <th>System Changes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="small text-muted">{{ log.timestamp }}</td>
+                    <td>
+                        <div class="fw-bold">{{ log.user_name }}</div>
+                        <div class="small badge bg-secondary">{{ log.user_type }}</div>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill badge-action 
+                            {{ 'bg-success' if log.action == 'login' or log.action == 'return' }}
+                            {{ 'bg-primary' if log.action == 'borrow' }}
+                            {{ 'bg-warning' if log.action == 'addbook' }}
+                            {{ 'bg-danger' if log.action == 'logout' }}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td>{{ log.book_title or 'N/A' }}</td>
+                    <td><em class="small text-primary">{{ log.details }}</em></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
