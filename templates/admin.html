@@ -9,8 +9,6 @@
     <style>
         :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
         body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-        
-        /* Sidebar Styling */
         .sidebar {
             width: 240px; min-height: 100vh;
             background: var(--gradient-main);
@@ -28,8 +26,6 @@
             background: rgba(255,255,255,0.15); color: white;
         }
         .sidebar .nav-link i { width: 20px; }
-        
-        /* Layout & Cards */
         .main-content { margin-left: 240px; padding: 2rem; }
         .stat-card {
             border: none; border-radius: 18px;
@@ -50,7 +46,6 @@
             margin-bottom: 1.5rem;
         }
         .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
-        
         @media (max-width: 768px) {
             .sidebar { width: 100%; min-height: auto; position: relative; }
             .main-content { margin-left: 0; }
@@ -72,16 +67,7 @@
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
-            
-            <!-- Fixed Sidebar Links -->
-            <a href="{{ url_for('transactions_log') }}" class="nav-link">
-                <i class="fas fa-exchange-alt me-2"></i>Transactions
-            </a>
-            <a href="{{ url_for('transactions_log') }}" class="nav-link">
-                <i class="fas fa-clipboard-list me-2"></i>Transaction Log
-            </a>
         </nav>
-        
         <div class="mt-auto pt-3">
             <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
                 <i class="fas fa-sign-out-alt me-2"></i>Logout
@@ -89,7 +75,7 @@
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -98,7 +84,6 @@
             </div>
         </div>
 
-        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for cat, msg in messages %}
                 <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
@@ -107,7 +92,7 @@
             {% endfor %}{% endif %}
         {% endwith %}
 
-        <!-- Stats Row -->
+        <!-- Stats -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card" style="background: linear-gradient(135deg,#6366f1,#8b5cf6);">
@@ -133,7 +118,7 @@
         </div>
 
         <div class="row g-3">
-            <!-- Trending Books Table -->
+            <!-- Trending Books -->
             <div class="col-lg-6">
                 <div class="section-card">
                     <h6 class="fw-bold mb-3"><i class="fas fa-fire text-danger me-2"></i>Trending Books</h6>
@@ -160,7 +145,7 @@
                 </div>
             </div>
 
-            <!-- Recent Members Quick View -->
+            <!-- All Users Quick View -->
             <div class="col-lg-6">
                 <div class="section-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
