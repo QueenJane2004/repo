@@ -1,7 +1,6 @@
 import sqlite3
 
-DB_PATH = "library_v2.db"  # We changed this to v2 to force Render to create a fresh file
-
+DB_PATH = "library_v3.db"  # Change v2 to v3
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
