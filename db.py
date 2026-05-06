@@ -1,19 +1,15 @@
 import sqlite3
 import os
 
-# No environment variables needed for SQLite
 DB_PATH = "library.db"
 
 def get_conn():
-    # Use sqlite3 instead of psycopg
     conn = sqlite3.connect(DB_PATH)
-    # This line is REQUIRED for user['id'] to work in app.py
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
     with get_conn() as conn:
-        # Executescript handles multiple CREATE TABLE commands
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,16 +37,16 @@ def init_db():
             );
         """)
         
-        # Create the admin account automatically
+        # Create default admin if it doesn't exist
         cur = conn.cursor()
-        admin_exists = cur.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
-        if not admin_exists:
+        admin = cur.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
+        if not admin:
             cur.execute("INSERT INTO users (username, password, firstname, role) VALUES (?, ?, ?, ?)",
                         ('admin', 'admin123', 'System', 'admin'))
         conn.commit()
 
 def query_db(query, args=(), one=False):
-    # SQLite uses '?' instead of '%s'
+    # Using '?' for SQLite placeholders
     query = query.replace("%s", "?")
     try:
         with get_conn() as conn:
@@ -58,10 +54,10 @@ def query_db(query, args=(), one=False):
             cur.execute(query, args)
             if query.strip().upper().startswith("SELECT"):
                 result = cur.fetchall()
-                # Convert to dictionaries for app.py
                 dict_result = [dict(row) for row in result]
                 return dict_result[0] if one and dict_result else (None if one else dict_result)
             conn.commit()
             return None
     except Exception as e:
+        print(f"Database Error: {e}")
         return None if one else []
