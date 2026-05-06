@@ -200,7 +200,7 @@ def update_book_qty():
 @login_required
 def borrow_books():
     # Your logic here
-    return render_template('borrow.html')
+    return render_template('borrow_books.html')
 
 
 
