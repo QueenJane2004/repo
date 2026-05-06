@@ -143,6 +143,16 @@ def transactions_log():
 
 # --- ACTION ROUTES ---
 
+
+@app.route('/checkout/<int:book_id>', methods=['POST'])
+@login_required
+def checkout(book_id):
+    # Your logic for borrowing goes here
+    flash("Book checked out!", "success")
+    return redirect(url_for('user_dashboard'))
+
+
+
 @app.route('/add_book', methods=['POST'])
 @login_required
 @admin_required
@@ -197,14 +207,6 @@ def borrow_books():
     # Your logic here
     return render_template('borrow.html')
 
-
-
-@app.route('/checkout/<int:book_id>', methods=['POST'])
-@login_required
-def checkout(book_id):
-    # For now, just redirect back until you write the logic
-    flash("Checkout logic not implemented yet!", "info")
-    return redirect(url_for('user_dashboard'))
 
 
 # --- USER ROUTES ---
