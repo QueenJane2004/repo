@@ -247,8 +247,6 @@ def admin_dashboard():
         LIMIT 10
     """) or []
 
-    # REMOVED: Messages query causing DB error m.created_at
-
     return render_template(
         'admin.html',
         books_count    = books_count['cnt'] if books_count else 0,
@@ -397,11 +395,12 @@ def transactions_log():
     is_admin = session.get('role') == 'admin'
 
     if is_admin:
+        # Changed '||' to 'CONCAT' for better compatibility with MySQL/MariaDB
         transactions = db.query_db("""
-            SELECT
+            SELECT 
                 l.id, l.issue_date, l.due_date, l.return_date, l.fine_amount,
                 b.title AS book_title, b.author AS book_author,
-                u.firstname || ' ' || u.lastname AS user_name
+                CONCAT(u.firstname, ' ', u.lastname) AS user_name
             FROM loans l
             JOIN books b ON b.id = l.book_id
             JOIN users u ON u.id = l.user_id
@@ -409,7 +408,7 @@ def transactions_log():
         """) or []
     else:
         transactions = db.query_db("""
-            SELECT
+            SELECT 
                 l.id, l.issue_date, l.due_date, l.return_date, l.fine_amount,
                 b.title AS book_title, b.author AS book_author
             FROM loans l
@@ -418,8 +417,8 @@ def transactions_log():
             ORDER BY l.issue_date DESC
         """, (session['user_id'],)) or []
 
-    return render_template('transactions_log.html',
-                           transactions=transactions,
+    return render_template('transactions_log.html', 
+                           transactions=transactions, 
                            is_admin=is_admin)
 
 
