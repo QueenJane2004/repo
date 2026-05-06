@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Returned Books | Digital Library Admin</title>
+    <title>Return Books | Digital Library</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
         body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-
-        /* ── Sidebar (same as admin_dashboard) ── */
         .sidebar {
             width: 240px; min-height: 100vh;
             background: var(--gradient-main);
@@ -29,6 +27,7 @@
             background: rgba(255,255,255,0.15); color: white;
         }
         .sidebar .nav-link i { width: 20px; }
+
         .borrow-toggle {
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer; user-select: none;
@@ -46,85 +45,14 @@
         }
         .submenu .nav-link:hover .sub-dot, .submenu .nav-link.active .sub-dot { background: white; }
 
-        /* ── Main ── */
         .main-content { margin-left: 240px; padding: 2rem; }
-
-        /* ── Stat cards ── */
-        .stat-card {
-            border: none; border-radius: 18px; padding: 1.4rem;
-            color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .stat-icon {
-            width: 46px; height: 46px; background: rgba(255,255,255,0.2);
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; margin-bottom: 0.75rem;
-        }
-
-        /* ── Section card ── */
         .section-card {
-            background: white; border: none; border-radius: 18px;
-            padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            background: white; border: none;
+            border-radius: 18px; padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            margin-bottom: 1.5rem;
         }
-
-        /* ── Search bar ── */
-        .search-wrap {
-            position: relative; max-width: 360px;
-        }
-        .search-wrap i {
-            position: absolute; left: 14px; top: 50%;
-            transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;
-        }
-        .search-wrap input {
-            padding-left: 38px; border-radius: 50px;
-            border: 1.5px solid #e2e8f0; font-size: 0.875rem;
-            background: #f8fafc; transition: all 0.2s;
-        }
-        .search-wrap input:focus {
-            border-color: #6366f1; background: white;
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-        }
-
-        /* ── Table ── */
-        .table th {
-            font-size: 0.72rem; text-transform: uppercase;
-            color: #94a3b8; font-weight: 600; border-bottom: 1.5px solid #f1f5f9;
-        }
-        .table td { font-size: 0.875rem; vertical-align: middle; border-color: #f8fafc; }
-        .table tbody tr { transition: background 0.15s; }
-        .table tbody tr:hover { background: #f8fafc; }
-
-        /* ── Badges ── */
-        .badge-fine {
-            background: #fee2e2; color: #991b1b;
-            font-size: 0.72rem; font-weight: 600;
-            padding: 4px 10px; border-radius: 50px;
-        }
-        .badge-clean {
-            background: #dcfce7; color: #166534;
-            font-size: 0.72rem; font-weight: 600;
-            padding: 4px 10px; border-radius: 50px;
-        }
-        .badge-returned {
-            background: #ede9fe; color: #5b21b6;
-            font-size: 0.72rem; font-weight: 600;
-            padding: 4px 10px; border-radius: 50px;
-        }
-
-        /* ── Book cover thumb ── */
-        .book-thumb {
-            width: 42px; height: 54px; border-radius: 6px;
-            object-fit: cover; background: #e2e8f0;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* ── Empty state ── */
-        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
-        .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.35; }
-
-        /* ── Pagination ── */
-        .page-link { border-radius: 8px !important; border: 1.5px solid #e2e8f0; color: #475569; font-size: 0.82rem; margin: 0 2px; }
-        .page-item.active .page-link { background: #6366f1; border-color: #6366f1; }
-
+        .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
         @media (max-width: 768px) {
             .sidebar { width: 100%; min-height: auto; position: relative; }
             .main-content { margin-left: 0; }
@@ -132,236 +60,135 @@
     </style>
 </head>
 <body>
-
-<!-- ── Sidebar ── -->
-<div class="sidebar">
-    <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
-    <nav class="nav flex-column">
-        <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-        </a>
-        <a href="{{ url_for('manage_books') }}" class="nav-link">
-            <i class="fas fa-book me-2"></i>Manage Books
-        </a>
-
-        <a class="nav-link borrow-toggle"
-           data-bs-toggle="collapse"
-           data-bs-target="#borrowSubmenu"
-           aria-expanded="true"
-           aria-controls="borrowSubmenu">
-            <span><i class="fas fa-hand-holding me-2"></i>Borrow Books</span>
-            <i class="fas fa-chevron-down chevron"></i>
-        </a>
-        <div class="collapse show submenu" id="borrowSubmenu">
-            <a href="{{ url_for('borrow_pending') }}" class="nav-link">
-                <span class="sub-dot"></span>
-                <i class="fas fa-hourglass-half me-1" style="width:16px;font-size:0.8rem;"></i>Pending
+    <div class="sidebar">
+        <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
+        <nav class="nav flex-column">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
             </a>
-            <a href="{{ url_for('borrow_approve') }}" class="nav-link">
-                <span class="sub-dot"></span>
-                <i class="fas fa-check-circle me-1" style="width:16px;font-size:0.8rem;"></i>Approve
+            <a href="{{ url_for('manage_books') }}" class="nav-link">
+                <i class="fas fa-book me-2"></i>Manage Books
             </a>
-            <a href="{{ url_for('borrow_on_borrow') }}" class="nav-link">
-                <span class="sub-dot"></span>
-                <i class="fas fa-book-reader me-1" style="width:16px;font-size:0.8rem;"></i>On Borrow
+
+            <a class="nav-link borrow-toggle"
+               data-bs-toggle="collapse"
+               data-bs-target="#borrowSubmenu"
+               aria-expanded="true"
+               aria-controls="borrowSubmenu">
+                <span><i class="fas fa-hand-holding me-2"></i>Borrow Books</span>
+                <i class="fas fa-chevron-down chevron" style="transform:rotate(180deg);"></i>
             </a>
-            <a href="{{ url_for('borrow_cancel') }}" class="nav-link">
-                <span class="sub-dot"></span>
-                <i class="fas fa-times-circle me-1" style="width:16px;font-size:0.8rem;"></i>Cancel
+            <div class="collapse show submenu" id="borrowSubmenu">
+                <a href="{{ url_for('borrow_pending') }}" class="nav-link {% if request.endpoint == 'borrow_pending' %}active{% endif %}">
+                    <span class="sub-dot"></span>
+                    <i class="fas fa-hourglass-half me-1" style="width:16px;font-size:0.8rem;"></i>Pending
+                </a>
+                <a href="{{ url_for('borrow_approve') }}" class="nav-link {% if request.endpoint == 'borrow_approve' %}active{% endif %}">
+                    <span class="sub-dot"></span>
+                    <i class="fas fa-check-circle me-1" style="width:16px;font-size:0.8rem;"></i>Approve
+                </a>
+                <a href="{{ url_for('borrow_on_borrow') }}" class="nav-link {% if request.endpoint == 'borrow_on_borrow' %}active{% endif %}">
+                    <span class="sub-dot"></span>
+                    <i class="fas fa-book-reader me-1" style="width:16px;font-size:0.8rem;"></i>On Borrow
+                </a>
+                <a href="{{ url_for('borrow_cancel') }}" class="nav-link {% if request.endpoint == 'borrow_cancel' %}active{% endif %}">
+                    <span class="sub-dot"></span>
+                    <i class="fas fa-times-circle me-1" style="width:16px;font-size:0.8rem;"></i>Cancel
+                </a>
+                <a href="{{ url_for('borrow_return') }}" class="nav-link {% if request.endpoint == 'borrow_return' %}active{% endif %}">
+                    <span class="sub-dot"></span>
+                    <i class="fas fa-undo-alt me-1" style="width:16px;font-size:0.8rem;"></i>Return
+                </a>
+            </div>
+
+            <a href="{{ url_for('view_users') }}" class="nav-link">
+                <i class="fas fa-users me-2"></i>Users
             </a>
-            <a href="{{ url_for('returned_books') }}" class="nav-link active">
-                <span class="sub-dot"></span>
-                <i class="fas fa-undo-alt me-1" style="width:16px;font-size:0.8rem;"></i>Return
+            <a href="{{ url_for('transactions_log') }}" class="nav-link">
+                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
             </a>
-        </div>
-
-        <a href="{{ url_for('view_users') }}" class="nav-link">
-            <i class="fas fa-users me-2"></i>Users
-        </a>
-        <a href="{{ url_for('transactions_log') }}" class="nav-link">
-            <i class="fas fa-clipboard-list me-2"></i>Activity Logs
-        </a>
-    </nav>
-    <div class="mt-auto pt-3">
-        <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
-            <i class="fas fa-sign-out-alt me-2"></i>Logout
-        </a>
-    </div>
-</div>
-
-<!-- ── Main Content ── -->
-<div class="main-content">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-0">Returned Books</h4>
-            <p class="text-muted small mb-0">All books that have been returned by members</p>
-        </div>
-        <a href="{{ url_for('transactions_log') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-            <i class="fas fa-clipboard-list me-1"></i>Full Activity Log
-        </a>
-    </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}{% for cat, msg in messages %}
-            <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
-                {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}{% endif %}
-    {% endwith %}
-
-    <!-- Stat Row -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="stat-card" style="background: linear-gradient(135deg,#6366f1,#8b5cf6);">
-                <div class="stat-icon"><i class="fas fa-undo-alt"></i></div>
-                <div class="fs-3 fw-bold">{{ total_returned }}</div>
-                <div class="opacity-75 small">Total Returns</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card" style="background: linear-gradient(135deg,#10b981,#059669);">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                <div class="fs-3 fw-bold">{{ on_time_count }}</div>
-                <div class="opacity-75 small">On Time</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card" style="background: linear-gradient(135deg,#f59e0b,#ef4444);">
-                <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="fs-3 fw-bold">{{ with_fine_count }}</div>
-                <div class="opacity-75 small">With Fine</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card" style="background: linear-gradient(135deg,#dc2626,#9f1239);">
-                <div class="stat-icon"><i class="fas fa-peso-sign"></i></div>
-                <div class="fs-3 fw-bold">₱{{ total_fines_collected }}</div>
-                <div class="opacity-75 small">Fines Collected</div>
-            </div>
+        </nav>
+        <div class="mt-auto pt-3">
+            <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
         </div>
     </div>
 
-    <!-- Table Card -->
-    <div class="section-card">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <h6 class="fw-bold mb-0"><i class="fas fa-list me-2 text-indigo-500"></i>Return Records</h6>
-            <div class="search-wrap">
-                <i class="fas fa-search"></i>
-                <input type="text" id="returnSearch" class="form-control" placeholder="Search member, book...">
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-0"><i class="fas fa-undo-alt me-2 text-success"></i>Return Books</h4>
+                <p class="text-muted small mb-0">Process book returns from borrowers</p>
             </div>
         </div>
 
-        {% if returned_loans %}
-        <div class="table-responsive">
-            <table class="table align-middle mb-0" id="returnTable">
-                <thead>
-                    <tr>
-                        <th style="width:52px;"></th>
-                        <th>Book</th>
-                        <th>Member</th>
-                        <th>Borrowed</th>
-                        <th>Due Date</th>
-                        <th>Returned</th>
-                        <th>Fine</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for loan in returned_loans %}
-                    <tr class="return-row"
-                        data-search="{{ loan.book_title|lower }} {{ loan.username|lower }}">
-                        <td>
-                            <img src="{{ loan.image_url or '/static/uploads/books/default_cover.png' }}"
-                                 class="book-thumb"
-                                 alt="{{ loan.book_title }}"
-                                 onerror="this.src='/static/uploads/books/default_cover.png'">
-                        </td>
-                        <td>
-                            <div class="fw-semibold" style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                {{ loan.book_title }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div style="width:30px;height:30px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#7c3aed;flex-shrink:0;">
-                                    {{ loan.username[0]|upper }}
-                                </div>
-                                <span>{{ loan.username }}</span>
-                            </div>
-                        </td>
-                        <td class="text-muted">{{ loan.issue_date }}</td>
-                        <td class="text-muted">{{ loan.due_date }}</td>
-                        <td>
-                            <span class="fw-semibold text-dark">{{ loan.return_date }}</span>
-                        </td>
-                        <td>
-                            {% if loan.fine_amount and loan.fine_amount > 0 %}
-                                <span class="badge-fine">₱{{ loan.fine_amount }}</span>
-                            {% else %}
-                                <span class="text-muted small">—</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if loan.fine_amount and loan.fine_amount > 0 %}
-                                <span class="badge-fine"><i class="fas fa-exclamation-circle me-1"></i>Late</span>
-                            {% else %}
-                                <span class="badge-clean"><i class="fas fa-check me-1"></i>On Time</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
+                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}{% endif %}
+        {% endwith %}
 
-        <div id="noReturnResults" class="empty-state d-none">
-            <i class="fas fa-search"></i>
-            <h6>No matching records found.</h6>
+        <div class="section-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Book</th>
+                            <th>Borrowed</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in active_loans %}
+                        <tr>
+                            <td class="fw-semibold small">{{ loan.username }}</td>
+                            <td class="small">{{ loan.book_title }}</td>
+                            <td class="text-muted small">{{ loan.issue_date }}</td>
+                            <td class="small">{{ loan.due_date }}</td>
+                            <td>
+                                {% if loan.due_date < now %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">On Borrow</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                        <i class="fas fa-undo me-1"></i>Return
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted small py-4">No books currently out for borrowing.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <!-- Simple result count -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-            <span class="text-muted small" id="returnCount">Showing {{ returned_loans|length }} record(s)</span>
-        </div>
-
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-undo-alt"></i>
-            <h6 class="fw-bold">No returns yet</h6>
-            <p class="small">Returned books will appear here once members start returning them.</p>
-        </div>
-        {% endif %}
     </div>
 
-</div><!-- /main-content -->
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Live search
-    const searchInput   = document.getElementById('returnSearch');
-    const rows          = document.querySelectorAll('.return-row');
-    const noResults     = document.getElementById('noReturnResults');
-    const countLabel    = document.getElementById('returnCount');
-
-    if (searchInput) {
-        searchInput.addEventListener('input', function () {
-            const q = this.value.toLowerCase().trim();
-            let visible = 0;
-            rows.forEach(row => {
-                const match = row.dataset.search.includes(q);
-                row.style.display = match ? '' : 'none';
-                if (match) visible++;
-            });
-            countLabel.textContent = `Showing ${visible} record(s)`;
-            if (noResults) noResults.classList.toggle('d-none', visible > 0 || !q);
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const currentPath = window.location.pathname;
+        const borrowLinks = document.querySelectorAll('#borrowSubmenu .nav-link');
+        borrowLinks.forEach(link => {
+            if (link.href && currentPath.startsWith(new URL(link.href).pathname)) {
+                link.classList.add('active');
+                const submenu = document.getElementById('borrowSubmenu');
+                submenu.classList.add('show');
+                document.querySelector('.borrow-toggle').setAttribute('aria-expanded', 'true');
+            }
         });
-    }
-
-    // Auto-expand borrow submenu chevron on this page
-    const toggle = document.querySelector('.borrow-toggle');
-    if (toggle) toggle.setAttribute('aria-expanded', 'true');
-</script>
+    </script>
 </body>
 </html>
