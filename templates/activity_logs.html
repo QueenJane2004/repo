@@ -2,54 +2,197 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>System Activity Logs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs | Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #f8fafc; padding: 2rem; }
-        .log-table { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .badge-action { text-transform: uppercase; font-size: 0.7rem; }
+        :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
+        body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .sidebar {
+            width: 240px; min-height: 100vh;
+            background: var(--gradient-main);
+            position: fixed; top: 0; left: 0;
+            z-index: 100; padding: 2rem 1rem;
+            display: flex; flex-direction: column;
+        }
+        .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75); border-radius: 12px;
+            padding: 0.75rem 1rem; margin-bottom: 4px;
+            transition: all 0.2s; font-size: 0.9rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15); color: white;
+        }
+        .sidebar .nav-link i { width: 20px; }
+        .main-content { margin-left: 240px; padding: 2rem; }
+        .section-card {
+            background: white; border: none;
+            border-radius: 18px; padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; min-height: auto; position: relative; }
+            .main-content { margin-left: 0; }
+        }
+        @media print {
+            .sidebar, .no-print { display: none !important; }
+            .main-content { margin-left: 0 !important; }
+        }
     </style>
 </head>
 <body>
-    <div class="d-flex justify-content-between mb-4">
-        <h2 class="fw-bold">System Activity Logs</h2>
-        <button class="btn btn-primary" onclick="window.print()">Export PDF</button>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
+        <nav class="nav flex-column">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="{{ url_for('manage_books') }}" class="nav-link">
+                <i class="fas fa-book me-2"></i>Manage Books
+            </a>
+            <a href="{{ url_for('borrow_books') }}" class="nav-link">
+                <i class="fas fa-hand-holding me-2"></i>Borrow Books
+            </a>
+            <a href="{{ url_for('view_users') }}" class="nav-link">
+                <i class="fas fa-users me-2"></i>Users
+            </a>
+            <a href="{{ url_for('transactions_log') }}" class="nav-link active">
+                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
+            </a>
+        </nav>
+        <div class="mt-auto pt-3">
+            <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+        </div>
     </div>
 
-    <div class="log-table">
-        <table class="table table-hover mb-0">
-            <thead class="table-dark">
-                <tr>
-                    <th>Timestamp</th>
-                    <th>User Information</th>
-                    <th>Action</th>
-                    <th>Affected Record</th>
-                    <th>System Changes</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td class="small text-muted">{{ log.timestamp }}</td>
-                    <td>
-                        <div class="fw-bold">{{ log.user_name }}</div>
-                        <div class="small badge bg-secondary">{{ log.user_type }}</div>
-                    </td>
-                    <td>
-                        <span class="badge rounded-pill badge-action 
-                            {{ 'bg-success' if log.action == 'login' or log.action == 'return' }}
-                            {{ 'bg-primary' if log.action == 'borrow' }}
-                            {{ 'bg-warning' if log.action == 'addbook' }}
-                            {{ 'bg-danger' if log.action == 'logout' }}">
-                            {{ log.action }}
-                        </span>
-                    </td>
-                    <td>{{ log.book_title or 'N/A' }}</td>
-                    <td><em class="small text-primary">{{ log.details }}</em></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Main -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <div>
+                <h4 class="fw-bold mb-0">Activity Logs</h4>
+                <p class="text-muted small mb-0">Complete borrowing history</p>
+            </div>
+            <button class="btn btn-outline-primary rounded-pill px-4" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print / Export PDF
+            </button>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row g-3 mb-4 no-print">
+            <div class="col-md-3">
+                <div class="section-card text-center py-3">
+                    <div class="fs-3 fw-bold text-primary">{{ logs | length }}</div>
+                    <div class="text-muted small">Total Records</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="section-card text-center py-3">
+                    <div class="fs-3 fw-bold text-success">{{ logs | selectattr('return_date') | list | length }}</div>
+                    <div class="text-muted small">Returned</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="section-card text-center py-3">
+                    <div class="fs-3 fw-bold text-warning">{{ logs | rejectattr('return_date') | list | length }}</div>
+                    <div class="text-muted small">Currently Borrowed</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="section-card text-center py-3">
+                    <div class="fs-3 fw-bold text-danger">
+                        ₱{{ logs | sum(attribute='fine_amount') | int }}
+                    </div>
+                    <div class="text-muted small">Total Fines</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="section-card mb-4 no-print">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" id="logSearch" class="form-control border-0 shadow-none"
+                       placeholder="Search by member, book title...">
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="section-card">
+            {% if logs %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="logsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Member</th>
+                            <th>Book</th>
+                            <th>Borrowed On</th>
+                            <th>Due Date</th>
+                            <th>Returned On</th>
+                            <th>Fine</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="log-row">
+                            <td class="text-muted small">{{ loop.index }}</td>
+                            <td class="fw-semibold small">{{ log.username }}</td>
+                            <td class="small">{{ log.book_title }}</td>
+                            <td class="text-muted small">{{ log.issue_date }}</td>
+                            <td class="small {{ 'text-danger fw-bold' if not log.return_date and log.due_date < now else '' }}">
+                                {{ log.due_date }}
+                            </td>
+                            <td class="text-muted small">
+                                {{ log.return_date if log.return_date else '—' }}
+                            </td>
+                            <td>
+                                {% if log.fine_amount and log.fine_amount > 0 %}
+                                    <span class="text-danger fw-bold small">₱{{ log.fine_amount | int }}</span>
+                                {% else %}
+                                    <span class="text-muted small">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.return_date %}
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Returned</span>
+                                {% elif log.due_date < now %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Active</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-list fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">No activity recorded yet.</h5>
+            </div>
+            {% endif %}
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('logSearch').addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.log-row').forEach(row => {
+                row.classList.toggle('d-none', !row.textContent.toLowerCase().includes(q));
+            });
+        });
+    </script>
 </body>
 </html>

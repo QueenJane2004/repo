@@ -9,8 +9,6 @@
     <style>
         :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
         body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-        
-        /* Sidebar Styling */
         .sidebar {
             width: 240px; min-height: 100vh;
             background: var(--gradient-main);
@@ -28,11 +26,7 @@
             background: rgba(255,255,255,0.15); color: white;
         }
         .sidebar .nav-link i { width: 20px; }
-        
-        /* Main Content Styling */
         .main-content { margin-left: 240px; padding: 2rem; }
-        
-        /* Dashboard Cards */
         .stat-card {
             border: none; border-radius: 18px;
             padding: 1.5rem; color: white;
@@ -45,16 +39,13 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 1.4rem; margin-bottom: 1rem;
         }
-        
         .section-card {
             background: white; border: none;
             border-radius: 18px; padding: 1.5rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.06);
             margin-bottom: 1.5rem;
         }
-        
         .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
-        
         @media (max-width: 768px) {
             .sidebar { width: 100%; min-height: auto; position: relative; }
             .main-content { margin-left: 0; }
@@ -62,8 +53,6 @@
     </style>
 </head>
 <body>
-
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
         <nav class="nav flex-column">
@@ -73,17 +62,12 @@
             <a href="{{ url_for('manage_books') }}" class="nav-link">
                 <i class="fas fa-book me-2"></i>Manage Books
             </a>
-            
-            <!-- FIXED: Point to 'borrow_books' -->
             <a href="{{ url_for('borrow_books') }}" class="nav-link">
                 <i class="fas fa-hand-holding me-2"></i>Borrow Books
             </a>
-            
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
-            
-            <!-- FIXED: Point to 'activity_logs' -->
             <a href="{{ url_for('transactions_log') }}" class="nav-link">
                 <i class="fas fa-clipboard-list me-2"></i>Activity Logs
             </a>
@@ -95,7 +79,6 @@
         </div>
     </div>
 
-    <!-- Main -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -104,7 +87,6 @@
             </div>
         </div>
 
-        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for cat, msg in messages %}
                 <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
@@ -113,7 +95,7 @@
             {% endfor %}{% endif %}
         {% endwith %}
 
-        <!-- Stats Section -->
+        <!-- Stats -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card" style="background: linear-gradient(135deg,#6366f1,#8b5cf6);">
@@ -139,19 +121,20 @@
         </div>
 
         <div class="row g-3">
-            <!-- Trending Books Section -->
+            <!-- Trending Books -->
             <div class="col-lg-6">
                 <div class="section-card">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-fire text-danger me-2"></i>Trending Books</h6>
+                    <h6 class="fw-bold mb-3"><i class="fas fa-fire text-danger me-2"></i>Most Borrowed Books</h6>
                     {% if trending_books %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead><tr><th>#</th><th>Title</th><th>Borrows</th></tr></thead>
+                            <thead><tr><th>#</th><th>Title</th><th>Author</th><th>Borrows</th></tr></thead>
                             <tbody>
                                 {% for book in trending_books %}
                                 <tr>
                                     <td class="text-muted small">{{ loop.index }}</td>
                                     <td class="fw-semibold small">{{ book.title }}</td>
+                                    <td class="text-muted small">{{ book.author }}</td>
                                     <td>
                                         <span class="badge bg-primary rounded-pill">{{ book.borrow_count }}</span>
                                     </td>
@@ -166,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- Users Quick View Section -->
+            <!-- Recent Members -->
             <div class="col-lg-6">
                 <div class="section-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -181,7 +164,11 @@
                                     {% for user in all_users[:8] %}
                                     <tr>
                                         <td class="fw-semibold small">{{ user.firstname }} {{ user.lastname }}</td>
-                                        <td><span class="badge bg-light text-dark border">{{ user.role }}</span></td>
+                                        <td>
+                                            <span class="badge rounded-pill {{ 'bg-danger' if user.role == 'admin' else 'bg-primary' }} bg-opacity-10 text-{{ 'danger' if user.role == 'admin' else 'primary' }}">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
                                         <td class="text-muted small">{{ user.username }}</td>
                                     </tr>
                                     {% endfor %}
@@ -191,6 +178,44 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-12">
+                <div class="section-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="fas fa-clock text-warning me-2"></i>Recent Borrowing Activity</h6>
+                        <a href="{{ url_for('transactions_log') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View All</a>
+                    </div>
+                    {% if recent_activity %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due</th><th>Status</th></tr></thead>
+                            <tbody>
+                                {% for log in recent_activity %}
+                                <tr>
+                                    <td class="fw-semibold small">{{ log.username }}</td>
+                                    <td class="small">{{ log.book_title }}</td>
+                                    <td class="text-muted small">{{ log.issue_date }}</td>
+                                    <td class="text-muted small">{{ log.due_date }}</td>
+                                    <td>
+                                        {% if log.return_date %}
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Returned</span>
+                                        {% elif log.due_date < now %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Overdue</span>
+                                        {% else %}
+                                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Active</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small text-center py-3">No activity yet.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
