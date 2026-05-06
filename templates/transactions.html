@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History | Digital Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --library-blue: #2563eb;
+            --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%);
+        }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header-bg {
+            background: var(--gradient-main);
+            height: 220px; width: 100%;
+            position: absolute; top: 0; z-index: -1;
+            border-radius: 0 0 50px 50px;
+        }
+        .navbar-custom { background: transparent; padding: 1.5rem 0; }
+        .page-heading {
+            color: white; text-align: center;
+            padding-top: 1.5rem; margin-bottom: 2.5rem;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            border: none; border-radius: 18px;
+            padding: 20px 24px; background: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: #fff; border-radius: 18px;
+            padding: 18px 22px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            margin-bottom: 24px;
+        }
+        .filter-bar .form-select,
+        .filter-bar .form-control {
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+        .filter-bar .form-select:focus,
+        .filter-bar .form-control:focus {
+            border-color: var(--library-blue);
+            box-shadow: none;
+        }
+
+        /* Transaction Table */
+        .tx-table-card {
+            border: none; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .tx-table thead th {
+            background: #f8fafc;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            font-weight: 700;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 14px 16px;
+            white-space: nowrap;
+        }
+        .tx-table tbody tr {
+            transition: background 0.15s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .tx-table tbody tr:last-child { border-bottom: none; }
+        .tx-table tbody tr:hover { background: #f8fafc; }
+        .tx-table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            font-size: 0.85rem;
+            color: #334155;
+        }
+
+        /* Book cover mini */
+        .book-thumb {
+            width: 42px; height: 58px;
+            object-fit: cover; border-radius: 6px;
+            background: #e2e8f0;
+            flex-shrink: 0;
+        }
+        .book-info { line-height: 1.3; }
+        .book-title { font-weight: 600; color: #1e293b; font-size: 0.85rem; }
+        .book-author { color: #94a3b8; font-size: 0.75rem; }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.03em; white-space: nowrap;
+        }
+        .status-borrowed  { background: #eff6ff; color: #2563eb; }
+        .status-returned  { background: #f0fdf4; color: #16a34a; }
+        .status-overdue   { background: #fff1f2; color: #e11d48; }
+        .status-renewed   { background: #fefce8; color: #ca8a04; }
+
+        /* Fine badge */
+        .fine-badge {
+            display: inline-block; padding: 4px 10px;
+            border-radius: 10px; font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .fine-none { background: #f1f5f9; color: #94a3b8; }
+        .fine-paid { background: #f0fdf4; color: #16a34a; }
+        .fine-due  { background: #fff1f2; color: #e11d48; }
+
+        /* Date display */
+        .date-main { font-size: 0.82rem; font-weight: 600; color: #1e293b; }
+        .date-sub  { font-size: 0.7rem; color: #94a3b8; }
+
+        /* Overdue highlight row */
+        .row-overdue { background: #fff5f5 !important; }
+
+        /* Empty state */
+        .empty-state {
+            padding: 80px 20px; text-align: center;
+        }
+        .empty-state .icon-wrap {
+            width: 80px; height: 80px; border-radius: 24px;
+            background: #f1f5f9; display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 2rem; color: #94a3b8; margin-bottom: 20px;
+        }
+
+        /* Pagination */
+        .page-link {
+            border-radius: 10px !important; margin: 0 2px;
+            border: 1px solid #e2e8f0; color: #475569;
+            font-size: 0.82rem;
+        }
+        .page-item.active .page-link {
+            background: var(--library-blue);
+            border-color: var(--library-blue);
+        }
+
+        @media (max-width: 768px) {
+            .tx-table thead { display: none; }
+            .tx-table tbody tr {
+                display: block; margin-bottom: 12px;
+                background: #fff; border-radius: 14px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+                border: none !important;
+            }
+            .tx-table td {
+                display: flex; justify-content: space-between;
+                align-items: center; padding: 10px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 0.8rem;
+            }
+            .tx-table td:last-child { border-bottom: none; }
+            .tx-table td::before {
+                content: attr(data-label);
+                font-size: 0.68rem; text-transform: uppercase;
+                letter-spacing: 0.06em; color: #94a3b8;
+                font-weight: 700; flex-shrink: 0; margin-right: 10px;
+            }
+            .book-thumb { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bg"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-5" href="{{ url_for('user_dashboard') }}">
+                <i class="fas fa-book-open-reader me-2"></i>DIGITAL LIBRARY
+            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-light btn-sm rounded-pill px-3 fw-bold" style="color:#2e1065;">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-2 pb-5">
+
+        <!-- Page Heading -->
+        <div class="page-heading">
+            <h1 class="fw-bold fs-3 mb-1">
+                <i class="fas fa-clock-rotate-left me-2"></i>Transaction History
+            </h1>
+            <p class="opacity-75 mb-0 small">All your borrowing activity in one place</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
+                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}{% endif %}
+        {% endwith %}
+
+        <!-- Summary Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-primary bg-opacity-10">
+                        <i class="fas fa-book-open text-primary"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-5">{{ stats.total_borrowed or 0 }}</div>
+                        <div class="text-muted" style="font-size:0.72rem;">Total Borrowed</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-success bg-opacity-10">
+                        <i class="fas fa-rotate-left text-success"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-5">{{ stats.total_returned or 0 }}</div>
+                        <div class="text-muted" style="font-size:0.72rem;">Returned</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-warning bg-opacity-10">
+                        <i class="fas fa-book text-warning"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-5">{{ stats.currently_borrowed or 0 }}</div>
+                        <div class="text-muted" style="font-size:0.72rem;">Currently Held</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-danger bg-opacity-10">
+                        <i class="fas fa-peso-sign text-danger"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-5">₱{{ stats.total_fines or '0.00' }}</div>
+                        <div class="text-muted" style="font-size:0.72rem;">Total Fines</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0" style="border-radius:10px 0 0 10px; border:1px solid #e2e8f0;">
+                            <i class="fas fa-search text-muted" style="font-size:0.8rem;"></i>
+                        </span>
+                        <input type="text" id="txSearch" class="form-control border-start-0"
+                               style="border-radius:0 10px 10px 0;"
+                               placeholder="Search by title or barcode...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="borrowed">Borrowed</option>
+                        <option value="returned">Returned</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="renewed">Renewed</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select id="fineFilter" class="form-select">
+                        <option value="">All Fines</option>
+                        <option value="with-fine">Has Fine</option>
+                        <option value="no-fine">No Fine</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <input type="date" id="dateFrom" class="form-control" title="From date">
+                </div>
+                <div class="col-6 col-md-2">
+                    <input type="date" id="dateTo" class="form-control" title="To date">
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <span id="txCount" class="text-muted" style="font-size:0.78rem;">
+                    Showing {{ transactions|length }} record(s)
+                </span>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="resetFilters()" style="font-size:0.78rem;">
+                    <i class="fas fa-rotate me-1"></i>Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Transaction Table -->
+        <div class="card tx-table-card">
+            <div class="table-responsive">
+                <table class="table tx-table mb-0" id="txTable">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Book</th>
+                            <th>Barcode</th>
+                            <th>Qty</th>
+                            <th>Borrowed On</th>
+                            <th>Due Date</th>
+                            <th>Returned On</th>
+                            <th>Status</th>
+                            <th>Fine</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txBody">
+                        {% if transactions %}
+                            {% for tx in transactions %}
+                            <tr class="tx-row {% if tx.status == 'overdue' %}row-overdue{% endif %}"
+                                data-title="{{ tx.title|lower }}"
+                                data-barcode="{{ tx.barcode or '' }}"
+                                data-status="{{ tx.status|lower }}"
+                                data-fine="{{ 'with-fine' if tx.fine and tx.fine > 0 else 'no-fine' }}"
+                                data-date="{{ tx.borrow_date or '' }}">
+
+                                <!-- Book -->
+                                <td data-label="Book">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ tx.image_url or '/static/uploads/books/default_cover.png' }}"
+                                             class="book-thumb"
+                                             onerror="this.src='/static/uploads/books/default_cover.png'"
+                                             alt="{{ tx.title }}">
+                                        <div class="book-info">
+                                            <div class="book-title text-truncate" style="max-width:160px;">{{ tx.title }}</div>
+                                            <div class="book-author">{{ tx.author }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Barcode -->
+                                <td data-label="Barcode">
+                                    <span class="text-muted" style="font-size:0.78rem; font-family: monospace;">
+                                        {{ tx.barcode or '—' }}
+                                    </span>
+                                </td>
+
+                                <!-- Qty -->
+                                <td data-label="Qty">
+                                    <span class="badge bg-light text-dark border" style="font-size:0.75rem;">
+                                        ×{{ tx.quantity or 1 }}
+                                    </span>
+                                </td>
+
+                                <!-- Borrowed On -->
+                                <td data-label="Borrowed On">
+                                    {% if tx.borrow_date %}
+                                    <div class="date-main">{{ tx.borrow_date.strftime('%b %d, %Y') if tx.borrow_date is not string else tx.borrow_date }}</div>
+                                    {% else %}<span class="text-muted">—</span>{% endif %}
+                                </td>
+
+                                <!-- Due Date -->
+                                <td data-label="Due Date">
+                                    {% if tx.due_date %}
+                                    <div class="date-main {% if tx.status == 'overdue' %}text-danger fw-bold{% endif %}">
+                                        {{ tx.due_date.strftime('%b %d, %Y') if tx.due_date is not string else tx.due_date }}
+                                    </div>
+                                    {% if tx.status == 'overdue' %}
+                                    <div class="date-sub text-danger">Overdue</div>
+                                    {% endif %}
+                                    {% else %}<span class="text-muted">—</span>{% endif %}
+                                </td>
+
+                                <!-- Returned On -->
+                                <td data-label="Returned On">
+                                    {% if tx.return_date %}
+                                    <div class="date-main">{{ tx.return_date.strftime('%b %d, %Y') if tx.return_date is not string else tx.return_date }}</div>
+                                    {% else %}<span class="text-muted fst-italic" style="font-size:0.78rem;">Not yet returned</span>{% endif %}
+                                </td>
+
+                                <!-- Status -->
+                                <td data-label="Status">
+                                    <span class="status-badge status-{{ tx.status|lower }}">
+                                        {% if tx.status|lower == 'borrowed' %}
+                                            <i class="fas fa-book-open"></i> Borrowed
+                                        {% elif tx.status|lower == 'returned' %}
+                                            <i class="fas fa-check-circle"></i> Returned
+                                        {% elif tx.status|lower == 'overdue' %}
+                                            <i class="fas fa-exclamation-circle"></i> Overdue
+                                        {% elif tx.status|lower == 'renewed' %}
+                                            <i class="fas fa-rotate"></i> Renewed
+                                        {% else %}
+                                            {{ tx.status }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+
+                                <!-- Fine -->
+                                <td data-label="Fine">
+                                    {% if tx.fine and tx.fine > 0 %}
+                                        {% if tx.fine_paid %}
+                                        <span class="fine-badge fine-paid">
+                                            <i class="fas fa-check me-1"></i>₱{{ "%.2f"|format(tx.fine) }}
+                                        </span>
+                                        {% else %}
+                                        <span class="fine-badge fine-due">
+                                            <i class="fas fa-peso-sign me-1"></i>{{ "%.2f"|format(tx.fine) }} due
+                                        </span>
+                                        {% endif %}
+                                    {% else %}
+                                    <span class="fine-badge fine-none">₱0.00</span>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <!-- Empty State -->
+                {% if not transactions %}
+                <div class="empty-state">
+                    <div class="icon-wrap">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">No Transactions Yet</h5>
+                    <p class="text-muted small">You haven't borrowed any books yet. Head to the library to get started!</p>
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary rounded-pill px-4 mt-2">
+                        <i class="fas fa-book me-2"></i>Browse Books
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- No Filter Results -->
+                <div id="noFilterResults" class="empty-state d-none">
+                    <div class="icon-wrap">
+                        <i class="fas fa-filter-circle-xmark"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">No Matching Records</h5>
+                    <p class="text-muted small">Try adjusting your filters or search term.</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if total_pages and total_pages > 1 %}
+            <div class="card-footer bg-white border-0 p-3 d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item {{ 'disabled' if current_page <= 1 }}">
+                            <a class="page-link" href="{{ url_for('transactions', page=current_page-1) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% for p in range(1, total_pages+1) %}
+                        <li class="page-item {{ 'active' if p == current_page }}">
+                            <a class="page-link" href="{{ url_for('transactions', page=p) }}">{{ p }}</a>
+                        </li>
+                        {% endfor %}
+                        <li class="page-item {{ 'disabled' if current_page >= total_pages }}">
+                            <a class="page-link" href="{{ url_for('transactions', page=current_page+1) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+
+    </div><!-- /container -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const rows          = document.querySelectorAll('.tx-row');
+        const txCount       = document.getElementById('txCount');
+        const noFilter      = document.getElementById('noFilterResults');
+        const txSearchInput = document.getElementById('txSearch');
+        const statusSel     = document.getElementById('statusFilter');
+        const fineSel       = document.getElementById('fineFilter');
+        const dateFrom      = document.getElementById('dateFrom');
+        const dateTo        = document.getElementById('dateTo');
+
+        function applyFilters() {
+            const query  = txSearchInput.value.toLowerCase().trim();
+            const status = statusSel.value.toLowerCase();
+            const fine   = fineSel.value;
+            const from   = dateFrom.value ? new Date(dateFrom.value) : null;
+            const to     = dateTo.value   ? new Date(dateTo.value)   : null;
+
+            let visible = 0;
+
+            rows.forEach(row => {
+                const title   = row.dataset.title   || '';
+                const barcode = row.dataset.barcode  || '';
+                const rowStat = row.dataset.status   || '';
+                const rowFine = row.dataset.fine     || '';
+                const rowDate = row.dataset.date     || '';
+
+                const matchQuery  = !query  || title.includes(query) || barcode.includes(query);
+                const matchStatus = !status || rowStat === status;
+                const matchFine   = !fine   || rowFine === fine;
+
+                let matchDate = true;
+                if (rowDate && (from || to)) {
+                    const d = new Date(rowDate);
+                    if (from && d < from) matchDate = false;
+                    if (to   && d > to)   matchDate = false;
+                }
+
+                const show = matchQuery && matchStatus && matchFine && matchDate;
+                row.classList.toggle('d-none', !show);
+                if (show) visible++;
+            });
+
+            txCount.textContent = `Showing ${visible} record(s)`;
+            noFilter.classList.toggle('d-none', visible > 0);
+        }
+
+        function resetFilters() {
+            txSearchInput.value = '';
+            statusSel.value     = '';
+            fineSel.value       = '';
+            dateFrom.value      = '';
+            dateTo.value        = '';
+            applyFilters();
+        }
+
+        txSearchInput.addEventListener('input',  applyFilters);
+        statusSel.addEventListener('change',     applyFilters);
+        fineSel.addEventListener('change',       applyFilters);
+        dateFrom.addEventListener('change',      applyFilters);
+        dateTo.addEventListener('change',        applyFilters);
+    </script>
+</body>
+</html>
