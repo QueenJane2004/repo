@@ -3,10 +3,22 @@ import uuid
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from datetime import datetime, timedelta
 from functools import wraps
+from werkzeug.utils import secure_filename
 import db
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key_123")
+
+# Configuration for Image Uploads
+UPLOAD_FOLDER = 'static/uploads/books'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure upload directory exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Initialize database
 db.init_db()
@@ -66,9 +78,11 @@ def logout():
 @login_required
 @admin_required
 def admin_dashboard():
-    b_count = db.query_db("SELECT COUNT(*) as cnt FROM books", one=True)['cnt']
-    u_count = db.query_db("SELECT COUNT(*) as cnt FROM users", one=True)['cnt']
-    l_count = db.query_db("SELECT COUNT(*) as cnt FROM loans WHERE return_date IS NULL", one=True)['cnt']
+    # Use 0 as default if query returns None to prevent crashes
+    b_count = (db.query_db("SELECT COUNT(*) as cnt FROM books", one=True) or {'cnt': 0})['cnt']
+    u_count = (db.query_db("SELECT COUNT(*) as cnt FROM users", one=True) or {'cnt': 0})['cnt']
+    l_count = (db.query_db("SELECT COUNT(*) as cnt FROM loans WHERE return_date IS NULL", one=True) or {'cnt': 0})['cnt']
+    
     all_users = db.query_db("SELECT * FROM users ORDER BY id DESC LIMIT 8")
     trending = db.query_db("""
         SELECT b.title, COUNT(l.id) as borrow_count 
@@ -99,6 +113,7 @@ def transactions_log():
         SELECT l.*, b.title as book_title, u.username 
         FROM loans l JOIN books b ON b.id = l.book_id 
         JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
+    # Synchronized with your filename: activity_logs.html
     return render_template('activity_logs.html', logs=logs)
 
 # --- ACTION ROUTES ---
@@ -113,14 +128,21 @@ def add_book():
     description = request.form.get('description')
     quantity = request.form.get('quantity', 1)
     
-    # Auto-generate barcode and handle image as None for now
     barcode = str(uuid.uuid4().hex[:8]).upper()
-    image_url = None 
+    image_path = None 
+
+    # Handle Image Upload
+    if 'book_image' in request.files:
+        file = request.files['book_image']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(f"{barcode}_{file.filename}")
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            image_path = f"/static/uploads/books/{filename}"
 
     db.query_db("""
         INSERT INTO books (title, author, publisher, description, image_url, barcode, quantity) 
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (title, author, publisher, description, image_url, barcode, quantity))
+    """, (title, author, publisher, description, image_path, barcode, quantity))
     
     flash(f'Added "{title}" successfully!', 'success')
     return redirect(url_for('manage_books'))
@@ -138,8 +160,10 @@ def delete_book(book_id):
 @admin_required
 def update_book_qty():
     data = request.get_json()
-    db.query_db("UPDATE books SET quantity = ? WHERE id = ?", (data.get('quantity'), data.get('book_id')))
-    return jsonify({"status": "success"})
+    if data and 'book_id' in data and 'quantity' in data:
+        db.query_db("UPDATE books SET quantity = ? WHERE id = ?", (data.get('quantity'), data.get('book_id')))
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 400
 
 # --- USER ROUTES ---
 
