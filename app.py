@@ -50,38 +50,23 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # 1. Get and clean inputs
-        u = request.form.get('username', '').strip()
-        p = request.form.get('password', '').strip()
+        # ... (your existing code to fetch user and check password)
         
-        if not u or not p:
-            flash("Please provide both username and password.", "warning")
-            return render_template('login.html')
-
-        # 2. Query the database
-        # Ensure your query selects the specific columns you need to access later
-        user = db.query_db("SELECT id, username, password, role, firstname FROM users WHERE username = ?", (u,), one=True)
-        
-        # 3. Check if user exists and password matches
-        if user and user['password'] == p:
-            # Clear any old session data first
-            session.clear()
-            
-            # Store data in session
+        if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
-            session['role'] = user['role']
             session['firstname'] = user['firstname']
-            
-            # 4. Redirect based on role
+            session['role'] = user['role']  # Make sure role is in session!
+
+            # Redirect based on role
             if user['role'] == 'admin':
                 return redirect(url_for('admin_dashboard'))
             else:
                 return redirect(url_for('user_dashboard'))
-        
-        # 5. If login fails
-        flash("Invalid username or password.", "danger")
-        
+    
     return render_template('login.html')
+
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
