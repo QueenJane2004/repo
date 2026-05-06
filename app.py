@@ -50,18 +50,24 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # ... (your existing code to fetch user and check password)
-        
-        if user and check_password_hash(user['password'], password):
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # 1. FETCH THE USER (Fixes the NameError)
+        user = db.query_db("SELECT * FROM users WHERE username = ?", [username], one=True)
+
+        # 2. PLAIN TEXT COMPARISON (Bypasses hashing as requested)
+        if user and user['password'] == password: 
             session['user_id'] = user['id']
             session['firstname'] = user['firstname']
-            session['role'] = user['role']  # Make sure role is in session!
+            session['role'] = user['role']
 
-            # Redirect based on role
             if user['role'] == 'admin':
                 return redirect(url_for('admin_dashboard'))
             else:
                 return redirect(url_for('user_dashboard'))
+        
+        flash("Invalid username or password", "danger")
     
     return render_template('login.html')
 
