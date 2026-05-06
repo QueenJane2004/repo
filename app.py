@@ -178,15 +178,25 @@ def checkout(book_id):
     BORROW_LIMIT = 5
     LOAN_DAYS    = 7
 
+    # Get requested quantity
+    borrow_qty = int(request.form.get('borrow_qty', 1))
+
     book = db.query_db("SELECT * FROM books WHERE id = ?", [book_id], one=True)
     if not book:
         flash("Book not found.", "danger")
         return redirect(url_for('user_dashboard'))
 
-    if book['quantity'] <= 0:
-        flash("Sorry, this book is out of stock.", "danger")
+    # Validate quantity is at least 1
+    if borrow_qty < 1:
+        flash("Please enter a valid quantity.", "danger")
         return redirect(url_for('user_dashboard'))
 
+    # Check requested qty doesn't exceed available stock
+    if borrow_qty > book['quantity']:
+        flash(f"Only {book['quantity']} copy/copies available.", "warning")
+        return redirect(url_for('user_dashboard'))
+
+    # Check if user already borrowed this book
     already_borrowed = db.query_db(
         "SELECT id FROM loans WHERE user_id = ? AND book_id = ? AND return_date IS NULL",
         [user_id, book_id], one=True
@@ -195,28 +205,33 @@ def checkout(book_id):
         flash("You have already borrowed this book.", "warning")
         return redirect(url_for('user_dashboard'))
 
+    # Check borrow limit (total active + requested can't exceed 5)
     active_count = db.query_db(
         "SELECT COUNT(*) as count FROM loans WHERE user_id = ? AND return_date IS NULL",
         [user_id], one=True
     )
-    if active_count and active_count['count'] >= BORROW_LIMIT:
-        flash(f"You have reached your borrow limit of {BORROW_LIMIT} books.", "warning")
+    current = active_count['count'] if active_count else 0
+    if current + borrow_qty > BORROW_LIMIT:
+        remaining = BORROW_LIMIT - current
+        flash(f"You can only borrow {remaining} more book(s). Your limit is {BORROW_LIMIT}.", "warning")
         return redirect(url_for('user_dashboard'))
 
-    db.query_db("UPDATE books SET quantity = quantity - 1 WHERE id = ?", [book_id])
+    # Decrease stock
+    db.query_db("UPDATE books SET quantity = quantity - ? WHERE id = ?", [borrow_qty, book_id])
 
+    # Create one loan record per copy
     today      = datetime.today()
     issue_date = today.strftime('%Y-%m-%d')
     due_date   = (today + timedelta(days=LOAN_DAYS)).strftime('%Y-%m-%d')
 
-    db.query_db(
-        "INSERT INTO loans (user_id, book_id, issue_date, due_date) VALUES (?, ?, ?, ?)",
-        [user_id, book_id, issue_date, due_date]
-    )
+    for _ in range(borrow_qty):
+        db.query_db(
+            "INSERT INTO loans (user_id, book_id, issue_date, due_date) VALUES (?, ?, ?, ?)",
+            [user_id, book_id, issue_date, due_date]
+        )
 
-    flash(f'You have successfully borrowed "{book["title"]}"! Due back by {due_date}.', "success")
+    flash(f'You borrowed {borrow_qty} copy/copies of "{book["title"]}"! Due by {due_date}.', "success")
     return redirect(url_for('user_dashboard'))
-
 
 @app.route('/return_book/<int:loan_id>', methods=['POST'])
 @login_required
