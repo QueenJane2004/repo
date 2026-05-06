@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Borrows | Digital Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
+        body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .sidebar {
+            width: 240px; min-height: 100vh;
+            background: var(--gradient-main);
+            position: fixed; top: 0; left: 0;
+            z-index: 100; padding: 2rem 1rem;
+            display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75); border-radius: 12px;
+            padding: 0.75rem 1rem; margin-bottom: 4px;
+            transition: all 0.2s; font-size: 0.9rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.15); color: white; }
+        .sidebar .nav-link i { width: 20px; }
+        .borrow-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+        .borrow-toggle .chevron { font-size: 0.7rem; transition: transform 0.25s; }
+        .borrow-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+        .submenu { padding-left: 0.5rem; margin-bottom: 4px; }
+        .submenu .nav-link { font-size: 0.82rem; padding: 0.5rem 1rem 0.5rem 2rem; border-radius: 10px; display: flex; align-items: center; gap: 8px; }
+        .submenu .nav-link .sub-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); flex-shrink: 0; transition: background 0.2s; }
+        .submenu .nav-link:hover .sub-dot, .submenu .nav-link.active .sub-dot { background: white; }
+        .sub-icon { width: 16px; font-size: 0.8rem; }
+        .main-content { margin-left: 240px; padding: 2rem; }
+        .section-card { background: white; border: none; border-radius: 18px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
+        .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
+        @media (max-width: 768px) { .sidebar { width: 100%; min-height: auto; position: relative; } .main-content { margin-left: 0; } }
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
+        <nav class="nav flex-column">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="{{ url_for('manage_books') }}" class="nav-link">
+                <i class="fas fa-book me-2"></i>Manage Books
+            </a>
+            <a class="nav-link borrow-toggle" data-bs-toggle="collapse" data-bs-target="#borrowSubmenu" aria-expanded="true" aria-controls="borrowSubmenu">
+                <span><i class="fas fa-hand-holding me-2"></i>Borrow Books</span>
+                <i class="fas fa-chevron-down chevron" style="transform:rotate(180deg);"></i>
+            </a>
+            <div class="collapse show submenu" id="borrowSubmenu">
+                <a href="{{ url_for('borrow_pending') }}"   class="nav-link {% if request.endpoint == 'borrow_pending'   %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-hourglass-half sub-icon"></i>Pending</a>
+                <a href="{{ url_for('borrow_approve') }}"   class="nav-link {% if request.endpoint == 'borrow_approve'   %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-check-circle   sub-icon"></i>Approve</a>
+                <a href="{{ url_for('borrow_on_borrow') }}" class="nav-link {% if request.endpoint == 'borrow_on_borrow' %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-book-reader    sub-icon"></i>On Borrow</a>
+                <a href="{{ url_for('borrow_cancel') }}"    class="nav-link {% if request.endpoint == 'borrow_cancel'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-times-circle  sub-icon"></i>Cancel</a>
+                <a href="{{ url_for('borrow_return') }}"    class="nav-link {% if request.endpoint == 'borrow_return'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-undo-alt      sub-icon"></i>Return</a>
+            </div>
+            <a href="{{ url_for('view_users') }}" class="nav-link">
+                <i class="fas fa-users me-2"></i>Users
+            </a>
+            <a href="{{ url_for('transactions_log') }}" class="nav-link">
+                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
+            </a>
+        </nav>
+        <div class="mt-auto pt-3">
+            <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-0"><i class="fas fa-hourglass-half me-2 text-warning"></i>Pending Requests</h4>
+                <p class="text-muted small mb-0">Books borrowed today — awaiting confirmation</p>
+            </div>
+        </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
+                {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+        <div class="section-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for loan in active_loans %}
+                        <tr>
+                            <td class="fw-semibold small">{{ loan.username }}</td>
+                            <td class="small">{{ loan.book_title }}</td>
+                            <td class="text-muted small">{{ loan.issue_date }}</td>
+                            <td class="small">{{ loan.due_date }}</td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">Pending</span></td>
+                            <td>
+                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST" class="d-inline">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="fas fa-undo me-1"></i>Return
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="text-center text-muted small py-4">No pending borrow requests today.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

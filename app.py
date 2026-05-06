@@ -98,14 +98,12 @@ def admin_dashboard():
     b_count = db.query_db("SELECT COUNT(*) as count FROM books", one=True)['count']
     u_count = db.query_db("SELECT COUNT(*) as count FROM users WHERE role='user'", one=True)['count']
 
-    # Only count loans not yet returned
     l_count = db.query_db(
         "SELECT COUNT(*) as count FROM loans WHERE return_date IS NULL", one=True
     )['count']
 
     all_users = db.query_db("SELECT * FROM users ORDER BY id DESC")
 
-    # Most borrowed books with real borrow counts
     trending = db.query_db("""
         SELECT b.id, b.title, b.author,
                COUNT(l.id) as borrow_count
@@ -116,7 +114,6 @@ def admin_dashboard():
         LIMIT 5
     """)
 
-    # Recent activity for dashboard table
     recent_activity = db.query_db("""
         SELECT l.*, b.title as book_title, u.username
         FROM loans l
@@ -128,7 +125,7 @@ def admin_dashboard():
 
     now = datetime.today().strftime('%Y-%m-%d')
 
-    return render_template('admin.html',
+    return render_template('admin_dashboard.html',
                            books_count=b_count,
                            users_count=u_count,
                            borrowed_count=l_count,
@@ -178,7 +175,6 @@ def checkout(book_id):
     BORROW_LIMIT = 5
     LOAN_DAYS    = 7
 
-    # Get requested quantity
     borrow_qty = int(request.form.get('borrow_qty', 1))
 
     book = db.query_db("SELECT * FROM books WHERE id = ?", [book_id], one=True)
@@ -186,17 +182,14 @@ def checkout(book_id):
         flash("Book not found.", "danger")
         return redirect(url_for('user_dashboard'))
 
-    # Validate quantity is at least 1
     if borrow_qty < 1:
         flash("Please enter a valid quantity.", "danger")
         return redirect(url_for('user_dashboard'))
 
-    # Check requested qty doesn't exceed available stock
     if borrow_qty > book['quantity']:
         flash(f"Only {book['quantity']} copy/copies available.", "warning")
         return redirect(url_for('user_dashboard'))
 
-    # Check if user already borrowed this book
     already_borrowed = db.query_db(
         "SELECT id FROM loans WHERE user_id = ? AND book_id = ? AND return_date IS NULL",
         [user_id, book_id], one=True
@@ -205,7 +198,6 @@ def checkout(book_id):
         flash("You have already borrowed this book.", "warning")
         return redirect(url_for('user_dashboard'))
 
-    # Check borrow limit (total active + requested can't exceed 5)
     active_count = db.query_db(
         "SELECT COUNT(*) as count FROM loans WHERE user_id = ? AND return_date IS NULL",
         [user_id], one=True
@@ -216,10 +208,8 @@ def checkout(book_id):
         flash(f"You can only borrow {remaining} more book(s). Your limit is {BORROW_LIMIT}.", "warning")
         return redirect(url_for('user_dashboard'))
 
-    # Decrease stock
     db.query_db("UPDATE books SET quantity = quantity - ? WHERE id = ?", [borrow_qty, book_id])
 
-    # Create one loan record per copy
     today      = datetime.today()
     issue_date = today.strftime('%Y-%m-%d')
     due_date   = (today + timedelta(days=LOAN_DAYS)).strftime('%Y-%m-%d')
@@ -233,13 +223,13 @@ def checkout(book_id):
     flash(f'You borrowed {borrow_qty} copy/copies of "{book["title"]}"! Due by {due_date}.', "success")
     return redirect(url_for('user_dashboard'))
 
+
 @app.route('/return_book/<int:loan_id>', methods=['POST'])
 @login_required
 def return_book(loan_id):
     user_id  = session['user_id']
     is_admin = session.get('role') == 'admin'
 
-    # Admins can return any loan; members only their own
     if is_admin:
         loan = db.query_db(
             "SELECT * FROM loans WHERE id = ? AND return_date IS NULL",
@@ -253,7 +243,7 @@ def return_book(loan_id):
 
     if not loan:
         flash("Loan not found or already returned.", "danger")
-        return redirect(url_for('borrow_books'))
+        return redirect(url_for('borrow_return'))
 
     today       = datetime.today()
     return_date = today.strftime('%Y-%m-%d')
@@ -271,7 +261,7 @@ def return_book(loan_id):
     else:
         flash("Book returned successfully! Thank you.", "success")
 
-    return redirect(url_for('borrow_books'))
+    return redirect(url_for('borrow_return'))
 
 
 @app.route('/add_book', methods=['POST'])
@@ -325,44 +315,31 @@ def update_book_qty():
     return jsonify({"status": "error"}), 400
 
 
-@app.route('/borrow_books')
-@login_required
-def borrow_books():
-    user_id  = session['user_id']
-    is_admin = session.get('role') == 'admin'
-    today    = datetime.today()
-    now      = today.strftime('%Y-%m-%d')
+# --- BORROW BOOKS ROUTES ---
 
-    if is_admin:
-        active_loans = db.query_db("""
-            SELECT l.*, b.title as book_title, b.author, b.image_url, u.username
-            FROM loans l
-            JOIN books b ON b.id = l.book_id
-            JOIN users u ON u.id = l.user_id
-            WHERE l.return_date IS NULL
-            ORDER BY l.due_date ASC
-        """) or []
+def _get_loans_data():
+    """Helper: fetch and annotate all active + returned loans for admin views."""
+    today = datetime.today()
+    now   = today.strftime('%Y-%m-%d')
 
-        returned_loans = db.query_db("""
-            SELECT l.*, b.title as book_title, u.username
-            FROM loans l
-            JOIN books b ON b.id = l.book_id
-            JOIN users u ON u.id = l.user_id
-            WHERE l.return_date IS NOT NULL
-            ORDER BY l.return_date DESC
-            LIMIT 50
-        """) or []
+    active_loans = db.query_db("""
+        SELECT l.*, b.title as book_title, b.author, b.image_url, u.username
+        FROM loans l
+        JOIN books b ON b.id = l.book_id
+        JOIN users u ON u.id = l.user_id
+        WHERE l.return_date IS NULL
+        ORDER BY l.due_date ASC
+    """) or []
 
-    else:
-        active_loans = db.query_db("""
-            SELECT l.*, b.title as book_title, b.author, b.image_url
-            FROM loans l
-            JOIN books b ON b.id = l.book_id
-            WHERE l.user_id = ? AND l.return_date IS NULL
-            ORDER BY l.due_date ASC
-        """, [user_id]) or []
-
-        returned_loans = []
+    returned_loans = db.query_db("""
+        SELECT l.*, b.title as book_title, u.username
+        FROM loans l
+        JOIN books b ON b.id = l.book_id
+        JOIN users u ON u.id = l.user_id
+        WHERE l.return_date IS NOT NULL
+        ORDER BY l.return_date DESC
+        LIMIT 50
+    """) or []
 
     total_fine    = 0
     overdue_count = 0
@@ -377,7 +354,114 @@ def borrow_books():
             loan['overdue_days'] = 0
             loan['current_fine'] = 0
 
-    return render_template('borrow_books.html',
+    return active_loans, returned_loans, total_fine, overdue_count, now
+
+
+@app.route('/borrow_books')
+@login_required
+def borrow_books():
+    """Legacy route — redirect to the right sub-page."""
+    if session.get('role') == 'admin':
+        return redirect(url_for('borrow_on_borrow'))
+    # For regular users, show their own loans
+    return redirect(url_for('borrow_return'))
+
+
+@app.route('/borrow/pending')
+@login_required
+@admin_required
+def borrow_pending():
+    active_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
+    # Pending = loans created today (just requested, not yet approved)
+    today_str    = datetime.today().strftime('%Y-%m-%d')
+    pending_loans = [l for l in active_loans if l['issue_date'] == today_str]
+    return render_template('borrow_pending.html',
+                           active_loans=pending_loans,
+                           returned_loans=returned_loans,
+                           total_fine=total_fine,
+                           overdue_count=overdue_count,
+                           now=now)
+
+
+@app.route('/borrow/approve')
+@login_required
+@admin_required
+def borrow_approve():
+    active_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
+    # Approved = active loans not overdue
+    approved_loans = [l for l in active_loans if l['overdue_days'] == 0]
+    return render_template('borrow_approve.html',
+                           active_loans=approved_loans,
+                           returned_loans=returned_loans,
+                           total_fine=total_fine,
+                           overdue_count=overdue_count,
+                           now=now)
+
+
+@app.route('/borrow/on_borrow')
+@login_required
+@admin_required
+def borrow_on_borrow():
+    active_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
+    # On Borrow = all currently active loans
+    return render_template('borrow_on_borrow.html',
+                           active_loans=active_loans,
+                           returned_loans=returned_loans,
+                           total_fine=total_fine,
+                           overdue_count=overdue_count,
+                           now=now)
+
+
+@app.route('/borrow/cancel')
+@login_required
+@admin_required
+def borrow_cancel():
+    active_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
+    # Cancelled = overdue loans
+    cancelled_loans = [l for l in active_loans if l['overdue_days'] > 0]
+    return render_template('borrow_cancel.html',
+                           active_loans=cancelled_loans,
+                           returned_loans=returned_loans,
+                           total_fine=total_fine,
+                           overdue_count=overdue_count,
+                           now=now)
+
+
+@app.route('/borrow/return')
+@login_required
+def borrow_return():
+    user_id  = session['user_id']
+    is_admin = session.get('role') == 'admin'
+    today    = datetime.today()
+    now      = today.strftime('%Y-%m-%d')
+
+    if is_admin:
+        active_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
+    else:
+        active_loans = db.query_db("""
+            SELECT l.*, b.title as book_title, b.author, b.image_url
+            FROM loans l
+            JOIN books b ON b.id = l.book_id
+            WHERE l.user_id = ? AND l.return_date IS NULL
+            ORDER BY l.due_date ASC
+        """, [user_id]) or []
+
+        returned_loans = []
+        total_fine     = 0
+        overdue_count  = 0
+
+        for loan in active_loans:
+            due = datetime.strptime(loan['due_date'], '%Y-%m-%d')
+            if today > due:
+                loan['overdue_days'] = (today - due).days
+                loan['current_fine'] = loan['overdue_days'] * 5
+                total_fine          += loan['current_fine']
+                overdue_count       += 1
+            else:
+                loan['overdue_days'] = 0
+                loan['current_fine'] = 0
+
+    return render_template('borrow_return.html',
                            active_loans=active_loans,
                            returned_loans=returned_loans,
                            total_fine=total_fine,
