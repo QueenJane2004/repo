@@ -73,14 +73,17 @@
             <a href="{{ url_for('manage_books') }}" class="nav-link">
                 <i class="fas fa-book me-2"></i>Manage Books
             </a>
-            <!-- UPDATED: Pointed to borrow_books function -->
+            
+            <!-- FIXED: Point to 'borrow_books' -->
             <a href="{{ url_for('borrow_books') }}" class="nav-link">
                 <i class="fas fa-hand-holding me-2"></i>Borrow Books
             </a>
+            
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
-            <!-- UPDATED: Pointed to activity_logs function -->
+            
+            <!-- FIXED: Point to 'activity_logs' -->
             <a href="{{ url_for('activity_logs') }}" class="nav-link">
                 <i class="fas fa-clipboard-list me-2"></i>Activity Logs
             </a>
