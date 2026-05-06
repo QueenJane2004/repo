@@ -100,21 +100,29 @@ def logout():
 # --- ADMIN ROUTES ---
 
 @app.route('/admin')
-@login_required
-@admin_required
 def admin_dashboard():
-    # Use 0 as default if query returns None to prevent crashes
-    b_count = (db.query_db("SELECT COUNT(*) as cnt FROM books", one=True) or {'cnt': 0})['cnt']
-    u_count = (db.query_db("SELECT COUNT(*) as cnt FROM users", one=True) or {'cnt': 0})['cnt']
-    l_count = (db.query_db("SELECT COUNT(*) as cnt FROM loans WHERE return_date IS NULL", one=True) or {'cnt': 0})['cnt']
-    
-    all_users = db.query_db("SELECT * FROM users ORDER BY id DESC LIMIT 8")
-    trending = db.query_db("""
-        SELECT b.title, COUNT(l.id) as borrow_count 
-        FROM books b JOIN loans l ON b.id = l.book_id 
-        GROUP BY b.id ORDER BY borrow_count DESC LIMIT 5
-    """)
-    return render_template('admin.html', books_count=b_count, users_count=u_count, borrowed_count=l_count, all_users=all_users, trending_books=trending)
+    # Force Login
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Redirect Members away from Admin page
+    if session.get('role') != 'admin':
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('user_dashboard'))
+
+    # Fetch data for admin.html
+    b_count = db.query_db("SELECT COUNT(*) as count FROM books", one=True)['count']
+    u_count = db.query_db("SELECT COUNT(*) as count FROM users WHERE role='member'", one=True)['count']
+    l_count = db.query_db("SELECT COUNT(*) as count FROM loans", one=True)['count']
+    all_users = db.query_db("SELECT * FROM users")
+    trending = db.query_db("SELECT * FROM books LIMIT 5")
+
+    return render_template('admin.html', 
+                           books_count=b_count, 
+                           users_count=u_count, 
+                           borrowed_count=l_count, 
+                           all_users=all_users, 
+                           trending_books=trending)
 
 @app.route('/manage_books')
 @login_required
@@ -216,14 +224,28 @@ def borrow_books():
 # --- USER ROUTES ---
 
 @app.route('/user')
-@login_required
 def user_dashboard():
+    # Force Login
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Redirect Admin away from User page
+    if session.get('role') == 'admin':
+        return redirect(url_for('admin_dashboard'))
+
+    # Fetch data for user.html
     books = db.query_db("SELECT * FROM books ORDER BY id DESC")
     recs = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4")
-    # Add these lines:
+    
+    # Ensure 'limit' and 'total_fine' are passed so user.html doesn't crash
     user_limit = 5 
-    fines = 0
-    return render_template('user.html', books=books, recommendations=recs, limit=user_limit, total_fine=fines)
+    fines = 0 # Replace with actual fine calculation if available
+    
+    return render_template('user.html', 
+                           books=books, 
+                           recommendations=recs, 
+                           limit=user_limit, 
+                           total_fine=fines)
 
 if __name__ == '__main__':
     app.run(debug=True)
