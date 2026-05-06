@@ -50,12 +50,25 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        u, p = request.form.get('username'), request.form.get('password')
+        # Using .strip() ensures that "admin " becomes "admin"
+        u = request.form.get('username', '').strip()
+        p = request.form.get('password', '').strip()
+        
+        # Check database for exact match
         user = db.query_db("SELECT * FROM users WHERE username = ? AND password = ?", (u, p), one=True)
+        
         if user:
-            session.update({'user_id': user['id'], 'role': user['role'], 'firstname': user['firstname']})
+            # Store data in session
+            session.update({
+                'user_id': user['id'], 
+                'role': user['role'], 
+                'firstname': user['firstname']
+            })
             return redirect(url_for('index'))
+        
+        # If no user found, show error
         flash("Invalid username or password.", "danger")
+        
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
