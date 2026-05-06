@@ -19,13 +19,19 @@ def init_db():
                 lastname TEXT,
                 role TEXT DEFAULT 'user'
             );
+            
+            /* UPDATED BOOKS TABLE */
             CREATE TABLE IF NOT EXISTS books (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 author TEXT,
+                publisher TEXT,
+                description TEXT,
+                image_url TEXT,
                 barcode TEXT UNIQUE,
                 quantity INTEGER DEFAULT 1
             );
+
             CREATE TABLE IF NOT EXISTS loans (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 book_id INTEGER REFERENCES books(id),
@@ -46,7 +52,6 @@ def init_db():
         conn.commit()
 
 def query_db(query, args=(), one=False):
-    # Using '?' for SQLite placeholders
     query = query.replace("%s", "?")
     try:
         with get_conn() as conn:
