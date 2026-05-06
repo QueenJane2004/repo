@@ -3,168 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Return Books | Digital Library</title>
+    <title>My Books | Digital Library</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
-        body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-        .sidebar {
-            width: 240px; min-height: 100vh;
-            background: var(--gradient-main);
-            position: fixed; top: 0; left: 0;
-            z-index: 100; padding: 2rem 1rem;
-            display: flex; flex-direction: column;
-            overflow-y: auto;
+        :root {
+            --library-blue: #2563eb;
+            --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%);
+            --status-pending: #f59e0b;
+            --status-safe: #10b981;
+            --status-overdue: #ef4444;
+            --status-returned: #6366f1;
         }
-        .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.75); border-radius: 12px;
-            padding: 0.75rem 1rem; margin-bottom: 4px;
-            transition: all 0.2s; font-size: 0.9rem;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.15); color: white; }
-        .sidebar .nav-link i { width: 20px; }
-        .borrow-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
-        .borrow-toggle .chevron { font-size: 0.7rem; transition: transform 0.25s; }
-        .borrow-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
-        .submenu { padding-left: 0.5rem; margin-bottom: 4px; }
-        .submenu .nav-link { font-size: 0.82rem; padding: 0.5rem 1rem 0.5rem 2rem; border-radius: 10px; display: flex; align-items: center; gap: 8px; }
-        .submenu .nav-link .sub-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); flex-shrink: 0; transition: background 0.2s; }
-        .submenu .nav-link:hover .sub-dot, .submenu .nav-link.active .sub-dot { background: white; }
-        .sub-icon { width: 16px; font-size: 0.8rem; }
-        .main-content { margin-left: 240px; padding: 2rem; }
-        .section-card { background: white; border: none; border-radius: 18px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
-        .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
-        @media (max-width: 768px) { .sidebar { width: 100%; min-height: auto; position: relative; } .main-content { margin-left: 0; } }
 
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .header-bg {
+            background: var(--gradient-main);
+            height: 260px; width: 100%;
+            position: absolute; top: 0; z-index: -1;
+            border-radius: 0 0 50px 50px;
+        }
+
+        .navbar-custom { background: transparent; padding: 1.5rem 0; }
+
+        .page-title {
+            color: white;
+            text-align: center;
+            padding-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Tab Pills */
+        .tab-pills {
+            display: flex;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 6px;
+            width: fit-content;
+            margin: 0 auto 2.5rem;
+        }
+
+        .tab-pill {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.75);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-pill.active {
+            background: white;
+            color: #2e1065;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tab-pill:hover:not(.active) {
+            color: white;
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Stat cards */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 18px;
+            padding: 16px 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            border: none;
+        }
+
+        .stat-icon {
+            width: 38px; height: 38px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Book loan cards */
+        .loan-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            margin-bottom: 16px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .loan-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .loan-accent {
+            width: 6px;
+            flex-shrink: 0;
+            border-radius: 20px 0 0 20px;
+        }
+
+        .loan-body { padding: 16px 20px; flex: 1; }
+
+        .loan-cover {
+            width: 70px; height: 90px;
+            object-fit: cover;
+            border-radius: 10px;
+            flex-shrink: 0;
+            background: #e2e8f0;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .status-safe    { background: #dcfce7; color: #166534; }
+        .status-overdue { background: #fee2e2; color: #991b1b; }
+        .status-returned{ background: #ede9fe; color: #5b21b6; }
+
+        /* Progress bar for due date */
+        .due-progress { height: 4px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
+        .due-progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+        /* Timeline dots for history */
+        .history-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #6366f1;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        /* Fine alert */
+        .fine-banner {
+            background: linear-gradient(135deg, #fef2f2, #fff5f5);
+            border: 1.5px solid #fecaca;
+            border-radius: 18px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .fine-icon-circle {
+            width: 48px; height: 48px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.4;
+        }
+
+        /* Return button */
+        .btn-return {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 7px 18px;
+            transition: all 0.2s;
+        }
+
+        .btn-return:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(99,102,241,0.35);
+            color: white;
+        }
+
+        /* Overdue pulse */
+        .overdue-pulse {
+            animation: ov-pulse 2s infinite;
+        }
+        @keyframes ov-pulse {
+            0%   { box-shadow: 0 4px 15px rgba(239,68,68,0.2); }
+            50%  { box-shadow: 0 4px 25px rgba(239,68,68,0.45); }
+            100% { box-shadow: 0 4px 15px rgba(239,68,68,0.2); }
+        }
+
+        /* Tab content */
+        .tab-content-pane { display: none; }
+        .tab-content-pane.active { display: block; }
+
+        @media (max-width: 576px) {
+            .loan-cover { width: 55px; height: 70px; }
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
-        <nav class="nav flex-column">
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
-                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+    <div class="header-bg"></div>
+
+    <nav class="navbar navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-5" href="{{ url_for('user_dashboard') }}">
+                <i class="fas fa-book-open-reader me-2"></i>DIGITAL LIBRARY
             </a>
-            <a href="{{ url_for('manage_books') }}" class="nav-link">
-                <i class="fas fa-book me-2"></i>Manage Books
-            </a>
-            <a class="nav-link borrow-toggle" data-bs-toggle="collapse" data-bs-target="#borrowSubmenu" aria-expanded="true" aria-controls="borrowSubmenu">
-                <span><i class="fas fa-hand-holding me-2"></i>Borrow Books</span>
-                <i class="fas fa-chevron-down chevron" style="transform:rotate(180deg);"></i>
-            </a>
-            <div class="collapse show submenu" id="borrowSubmenu">
-                <a href="{{ url_for('borrow_pending') }}"   class="nav-link {% if request.endpoint == 'borrow_pending'   %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-hourglass-half sub-icon"></i>Pending</a>
-                <a href="{{ url_for('borrow_approve') }}"   class="nav-link {% if request.endpoint == 'borrow_approve'   %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-check-circle   sub-icon"></i>Approve</a>
-                <a href="{{ url_for('borrow_on_borrow') }}" class="nav-link {% if request.endpoint == 'borrow_on_borrow' %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-book-reader    sub-icon"></i>On Borrow</a>
-                <a href="{{ url_for('borrow_cancel') }}"    class="nav-link {% if request.endpoint == 'borrow_cancel'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-times-circle  sub-icon"></i>Cancel</a>
-                <a href="{{ url_for('borrow_return') }}"    class="nav-link {% if request.endpoint == 'borrow_return'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-undo-alt      sub-icon"></i>Return</a>
-            </div>
-            <a href="{{ url_for('view_users') }}" class="nav-link">
-                <i class="fas fa-users me-2"></i>Users
-            </a>
-            <a href="{{ url_for('transactions_log') }}" class="nav-link">
-                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
-            </a>
-        </nav>
-        <div class="mt-auto pt-3">
-            <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
-                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i>Back
             </a>
         </div>
-    </div>
-    <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="fw-bold mb-0"><i class="fas fa-undo-alt me-2 text-primary"></i>Return Books</h4>
-                <p class="text-muted small mb-0">Process book returns and view return history</p>
-            </div>
+    </nav>
+
+    <div class="container mt-2">
+
+        <div class="page-title">
+            <h1 class="fw-bold fs-3 mb-1">My Books</h1>
+            <p class="opacity-75 mb-3">Track your current borrows &amp; return history</p>
         </div>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}{% for cat, msg in messages %}
-            <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
-                {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}{% endif %}
-    {% endwith %}
-        {% if total_fine and total_fine > 0 %}
-        <div class="alert alert-danger border-0 rounded-4 p-4 mb-4 shadow-sm d-flex align-items-center">
-            <div class="bg-danger text-white rounded-circle p-3 me-3">
-                <i class="fas fa-hand-holding-dollar fs-5"></i>
+
+        <!-- Tab Pills -->
+        <div class="tab-pills">
+            <button class="tab-pill active" onclick="switchTab('pending', this)">
+                <i class="fas fa-clock me-1"></i>Currently Borrowed
+                {% if active_loans %}
+                <span class="ms-1 badge bg-warning text-dark" style="font-size:0.65rem;">{{ active_loans|length }}</span>
+                {% endif %}
+            </button>
+            <button class="tab-pill" onclick="switchTab('history', this)">
+                <i class="fas fa-history me-1"></i>Return History
+                {% if returned_loans %}
+                <span class="ms-1 badge bg-light text-dark" style="font-size:0.65rem;">{{ returned_loans|length }}</span>
+                {% endif %}
+            </button>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
+                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}{% endif %}
+        {% endwith %}
+
+        <!-- Fine Banner -->
+        {% if total_fine > 0 %}
+        <div class="fine-banner">
+            <div class="fine-icon-circle">
+                <i class="fas fa-exclamation"></i>
             </div>
             <div>
-                <h6 class="fw-bold mb-1">Total Outstanding Fines: ₱{{ total_fine }}</h6>
-                <p class="mb-0 small">Some members have overdue books. Please process their returns.</p>
+                <div class="fw-bold text-danger mb-0" style="font-size:1rem;">Outstanding Fine: ₱{{ total_fine }}</div>
+                <div class="text-muted" style="font-size:0.82rem;">Please settle overdue fines at the library counter.</div>
             </div>
         </div>
         {% endif %}
 
-        <!-- Active Loans to Return -->
-        <div class="section-card mb-4">
-            <h6 class="fw-bold mb-3"><i class="fas fa-book-open text-primary me-2"></i>Active Loans</h6>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Fine (₱)</th><th>Action</th></tr></thead>
-                    <tbody>
-                        {% for loan in active_loans %}
-                        <tr>
-                            <td class="fw-semibold small">{{ loan.username }}</td>
-                            <td class="small">{{ loan.book_title }}</td>
-                            <td class="text-muted small">{{ loan.issue_date }}</td>
-                            <td class="small {% if loan.overdue_days > 0 %}text-danger fw-semibold{% endif %}">{{ loan.due_date }}</td>
-                            <td>
-                                {% if loan.current_fine > 0 %}
-                                    <span class="fw-bold text-danger">₱{{ loan.current_fine }}</span>
-                                {% else %}
-                                    <span class="badge bg-success bg-opacity-10 text-success">No Fine</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST" class="d-inline">
-                                    <button class="btn btn-sm {% if loan.current_fine > 0 %}btn-danger{% else %}btn-outline-primary{% endif %} rounded-pill px-3">
-                                        <i class="fas fa-undo me-1"></i>{% if loan.current_fine > 0 %}Return + Fine{% else %}Return{% endif %}
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="6" class="text-center text-muted small py-4">No active loans to return.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- Stat Summary -->
+        <div class="stat-row mb-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#dbeafe;">
+                    <i class="fas fa-book-open" style="color:#2563eb;"></i>
+                </div>
+                <div class="stat-value text-primary">{{ active_loans|length }}</div>
+                <div class="stat-label">Active Borrows</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fef3c7;">
+                    <i class="fas fa-exclamation-circle" style="color:#d97706;"></i>
+                </div>
+                <div class="stat-value" style="color:#d97706;">{{ overdue_count }}</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#ede9fe;">
+                    <i class="fas fa-check-circle" style="color:#7c3aed;"></i>
+                </div>
+                <div class="stat-value" style="color:#7c3aed;">{{ returned_loans|length }}</div>
+                <div class="stat-label">Returned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fee2e2;">
+                    <i class="fas fa-peso-sign" style="color:#dc2626;"></i>
+                </div>
+                <div class="stat-value text-danger">{{ total_fine }}</div>
+                <div class="stat-label">Total Fine ₱</div>
             </div>
         </div>
 
-        <!-- Return History -->
-        <div class="section-card">
-            <h6 class="fw-bold mb-3"><i class="fas fa-history text-secondary me-2"></i>Return History</h6>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Returned</th><th>Fine Paid</th></tr></thead>
-                    <tbody>
-                        {% for loan in returned_loans %}
-                        <tr>
-                            <td class="fw-semibold small">{{ loan.username }}</td>
-                            <td class="small">{{ loan.book_title }}</td>
-                            <td class="text-muted small">{{ loan.issue_date }}</td>
-                            <td class="text-muted small">{{ loan.return_date }}</td>
-                            <td>
-                                {% if loan.fine_amount and loan.fine_amount > 0 %}
-                                    <span class="text-danger fw-bold">₱{{ loan.fine_amount }}</span>
+        <!-- ── PENDING / ACTIVE TAB ── -->
+        <div id="tab-pending" class="tab-content-pane active">
+            {% if active_loans %}
+                {% for loan in active_loans %}
+                {% set is_overdue = loan.overdue_days > 0 %}
+                <div class="loan-card {{ 'overdue-pulse' if is_overdue else '' }} d-flex">
+                    <div class="loan-accent" style="background: {{ '#ef4444' if is_overdue else '#10b981' }};"></div>
+                    <div class="loan-body d-flex gap-3 align-items-start">
+                        <!-- Cover -->
+                        <img src="{{ loan.image_url or '/static/uploads/books/default_cover.png' }}"
+                             class="loan-cover"
+                             alt="{{ loan.book_title }}"
+                             onerror="this.src='/static/uploads/books/default_cover.png'">
+
+                        <!-- Info -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+                                <h6 class="fw-bold mb-0" style="font-size:0.95rem; color:#1e293b;">{{ loan.book_title }}</h6>
+                                {% if is_overdue %}
+                                <span class="status-badge status-overdue">
+                                    <i class="fas fa-fire" style="font-size:0.65rem;"></i> {{ loan.overdue_days }} day{{ 's' if loan.overdue_days != 1 }} overdue
+                                </span>
                                 {% else %}
-                                    <span class="text-success small">None</span>
+                                <span class="status-badge status-safe">
+                                    <i class="fas fa-check" style="font-size:0.65rem;"></i> On time
+                                </span>
                                 {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="5" class="text-center text-muted small py-4">No return history yet.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+
+                            <p class="text-muted mb-2" style="font-size:0.8rem;">{{ loan.author }}</p>
+
+                            <div class="d-flex gap-3 mb-2 flex-wrap" style="font-size:0.75rem; color:#64748b;">
+                                <span><i class="fas fa-calendar-plus me-1 text-primary"></i>Borrowed: <strong>{{ loan.issue_date }}</strong></span>
+                                <span><i class="fas fa-calendar-check me-1 {{ 'text-danger' if is_overdue else 'text-success' }}"></i>Due: <strong>{{ loan.due_date }}</strong></span>
+                            </div>
+
+                            {% if is_overdue %}
+                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                <div style="flex:1; min-width:120px;">
+                                    <div class="due-progress">
+                                        <div class="due-progress-fill" style="width:100%; background:#ef4444;"></div>
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#ef4444; margin-top:4px;">
+                                        Fine: <strong>₱{{ loan.current_fine }}</strong>
+                                    </div>
+                                </div>
+                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST">
+                                    <button type="submit" class="btn-return">
+                                        <i class="fas fa-undo me-1"></i>Return Now
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            {% set issue_dt = loan.issue_date %}
+                            {% set due_dt   = loan.due_date %}
+                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                <div style="flex:1; min-width:120px;">
+                                    <div class="due-progress">
+                                        <div class="due-progress-fill"
+                                             id="prog-{{ loan.id }}"
+                                             style="background:#10b981;"
+                                             data-issue="{{ loan.issue_date }}"
+                                             data-due="{{ loan.due_date }}">
+                                        </div>
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#64748b; margin-top:4px;">
+                                        Loan period progress
+                                    </div>
+                                </div>
+                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST">
+                                    <button type="submit" class="btn-return">
+                                        <i class="fas fa-undo me-1"></i>Return
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book-open empty-icon d-block"></i>
+                    <h5 class="fw-bold text-slate">No Active Borrows</h5>
+                    <p class="mb-3">You don't have any books checked out right now.</p>
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-search me-2"></i>Browse Books
+                    </a>
+                </div>
+            {% endif %}
         </div>
-    </div>
+
+        <!-- ── HISTORY TAB ── -->
+        <div id="tab-history" class="tab-content-pane">
+            {% if returned_loans %}
+                <div style="position:relative; padding-left:24px;">
+                    <!-- Timeline line -->
+                    <div style="position:absolute;left:4px;top:0;bottom:0;width:2px;background:#e2e8f0;border-radius:2px;"></div>
+
+                    {% for loan in returned_loans %}
+                    <div class="loan-card d-flex mb-3" style="border-left: 4px solid #6366f1;">
+                        <div class="loan-body d-flex gap-3 align-items-start">
+                            <!-- Cover -->
+                            <img src="{{ loan.image_url if loan.image_url is defined and loan.image_url else '/static/uploads/books/default_cover.png' }}"
+                                 class="loan-cover"
+                                 alt="{{ loan.book_title }}"
+                                 onerror="this.src='/static/uploads/books/default_cover.png'">
+
+                            <!-- Info -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+                                    <h6 class="fw-bold mb-0" style="font-size:0.92rem; color:#1e293b;">{{ loan.book_title }}</h6>
+                                    <span class="status-badge status-returned">
+                                        <i class="fas fa-check-circle" style="font-size:0.65rem;"></i> Returned
+                                    </span>
+                                </div>
+
+                                <div class="d-flex gap-3 flex-wrap mb-2" style="font-size:0.75rem; color:#64748b;">
+                                    <span><i class="fas fa-calendar-plus me-1 text-primary"></i>Borrowed: <strong>{{ loan.issue_date }}</strong></span>
+                                    <span><i class="fas fa-calendar-minus me-1 text-purple"></i>Returned: <strong>{{ loan.return_date }}</strong></span>
+                                </div>
+
+                                {% if loan.fine_amount and loan.fine_amount > 0 %}
+                                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background:#fee2e2; font-size:0.75rem;">
+                                    <i class="fas fa-peso-sign text-danger"></i>
+                                    <span class="text-danger fw-bold">Fine paid: ₱{{ loan.fine_amount }}</span>
+                                </div>
+                                {% else %}
+                                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background:#dcfce7; font-size:0.75rem;">
+                                    <i class="fas fa-check text-success"></i>
+                                    <span class="text-success fw-bold">No fine — returned on time</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-history empty-icon d-block"></i>
+                    <h5 class="fw-bold">No Return History</h5>
+                    <p>Books you return will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div><!-- /container -->
+
+    <div style="height:60px;"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tab switching
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        // Animate loan period progress bars
+        document.querySelectorAll('.due-progress-fill[data-issue]').forEach(bar => {
+            const issue   = new Date(bar.dataset.issue);
+            const due     = new Date(bar.dataset.due);
+            const today   = new Date();
+            const total   = due - issue;
+            const elapsed = today - issue;
+            const pct     = Math.min(100, Math.max(5, (elapsed / total) * 100));
+
+            // Color: green < 60%, amber 60-85%, red 85%+
+            const color = pct < 60 ? '#10b981' : pct < 85 ? '#f59e0b' : '#ef4444';
+            bar.style.background = color;
+            bar.style.width = '0%';
+            setTimeout(() => { bar.style.width = pct.toFixed(0) + '%'; }, 300);
+        });
+    </script>
 </body>
 </html>

@@ -427,6 +427,8 @@ def borrow_cancel():
                            now=now)
 
 
+# ── REPLACE the existing /borrow/return route in app.py with this ──
+
 @app.route('/borrow/return')
 @login_required
 def borrow_return():
@@ -446,9 +448,17 @@ def borrow_return():
             ORDER BY l.due_date ASC
         """, [user_id]) or []
 
-        returned_loans = []
-        total_fine     = 0
-        overdue_count  = 0
+        # ── NEW: fetch return history for the current user ──
+        returned_loans = db.query_db("""
+            SELECT l.*, b.title as book_title, b.author, b.image_url
+            FROM loans l
+            JOIN books b ON b.id = l.book_id
+            WHERE l.user_id = ? AND l.return_date IS NOT NULL
+            ORDER BY l.return_date DESC
+        """, [user_id]) or []
+
+        total_fine    = 0
+        overdue_count = 0
 
         for loan in active_loans:
             due = datetime.strptime(loan['due_date'], '%Y-%m-%d')
@@ -467,7 +477,6 @@ def borrow_return():
                            total_fine=total_fine,
                            overdue_count=overdue_count,
                            now=now)
-
 
 # --- USER ROUTES ---
 
