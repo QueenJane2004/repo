@@ -1,8 +1,7 @@
 import os
-import re
 import random
 import string
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from datetime import datetime, timedelta
 from functools import wraps
 import db
@@ -62,17 +61,17 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# --- ADMIN ROUTES ---
+# --- ADMIN ROUTES (Sidebar Functions) ---
+
 @app.route('/admin')
 @login_required
 @admin_required
 def admin_dashboard():
-    # Counters
+    """Main Dashboard view with stats and trending tables."""
     b_count = db.query_db("SELECT COUNT(*) as cnt FROM books", one=True)['cnt']
     u_count = db.query_db("SELECT COUNT(*) as cnt FROM users", one=True)['cnt']
     l_count = db.query_db("SELECT COUNT(*) as cnt FROM loans WHERE return_date IS NULL", one=True)['cnt']
     
-    # Data for dashboard tables
     all_users = db.query_db("SELECT * FROM users ORDER BY id DESC LIMIT 8")
     trending = db.query_db("""
         SELECT b.title, COUNT(l.id) as borrow_count 
@@ -91,8 +90,34 @@ def admin_dashboard():
 @login_required
 @admin_required
 def manage_books():
+    """Route for the 'Manage Books' sidebar link."""
     books = db.query_db("SELECT * FROM books ORDER BY id DESC")
     return render_template('manage_books.html', books=books)
+
+@app.route('/transactions')
+@login_required
+def transactions_log():
+    """Route for 'Borrowing Records' and 'History' sidebar links."""
+    if session['role'] == 'admin':
+        tx = db.query_db("""
+            SELECT l.*, b.title as book_title, u.username 
+            FROM loans l JOIN books b ON b.id = l.book_id 
+            JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
+    else:
+        tx = db.query_db("SELECT l.*, b.title as book_title FROM loans l JOIN books b ON b.id = l.book_id WHERE l.user_id = ?", (session['user_id'],))
+    
+    # We use transactions_log.html for both 'Records' and 'History' per your template setup
+    return render_template('transactions_log.html', transactions=tx, is_admin=(session['role'] == 'admin'))
+
+@app.route('/view_users')
+@login_required
+@admin_required
+def view_users():
+    """Route for the 'Users' sidebar link."""
+    users = db.query_db("SELECT * FROM users ORDER BY id DESC")
+    return render_template('view_users.html', all_users=users)
+
+# --- ACTION ROUTES ---
 
 @app.route('/add_book', methods=['POST'])
 @login_required
@@ -103,33 +128,6 @@ def add_book():
     db.query_db("INSERT INTO books (title, author, barcode, quantity) VALUES (?, ?, ?, ?)", (t, a, barcode, q))
     flash("Book added successfully.", "success")
     return redirect(url_for('manage_books'))
-
-@app.route('/view_users')
-@login_required
-@admin_required
-def view_users():
-    users = db.query_db("SELECT * FROM users ORDER BY id DESC")
-    return render_template('view_users.html', all_users=users)
-
-@app.route('/transactions')
-@login_required
-def transactions_log():
-    if session['role'] == 'admin':
-        tx = db.query_db("""
-            SELECT l.*, b.title as book_title, u.username 
-            FROM loans l JOIN books b ON b.id = l.book_id 
-            JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
-    else:
-        tx = db.query_db("SELECT l.*, b.title as book_title FROM loans l JOIN books b ON b.id = l.book_id WHERE l.user_id = ?", (session['user_id'],))
-    return render_template('transactions_log.html', transactions=tx, is_admin=(session['role'] == 'admin'))
-
-# --- USER ROUTES ---
-@app.route('/user')
-@login_required
-def user_dashboard():
-    books = db.query_db("SELECT * FROM books ORDER BY id DESC")
-    recs = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4")
-    return render_template('user.html', books=books, recommendations=recs)
 
 @app.route('/borrow/<int:book_id>', methods=['POST'])
 @login_required
@@ -155,6 +153,14 @@ def return_book(loan_id):
         db.query_db("UPDATE books SET quantity = quantity + 1 WHERE id = ?", (loan['book_id'],))
         flash("Book returned.", "success")
     return redirect(url_for('transactions_log'))
+
+# --- USER ROUTES ---
+@app.route('/user')
+@login_required
+def user_dashboard():
+    books = db.query_db("SELECT * FROM books ORDER BY id DESC")
+    recs = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4")
+    return render_template('user.html', books=books, recommendations=recs)
 
 if __name__ == '__main__':
     app.run(debug=True)
