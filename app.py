@@ -229,5 +229,20 @@ def user_dashboard():
                            limit=user_limit, 
                            total_fine=fines)
 
+
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    # Security check: Ensure only admins can delete users
+    if session.get('role') != 'admin':
+        return redirect(url_for('user_dashboard'))
+
+    # Delete the user from the database
+    db.query_db("DELETE FROM users WHERE id = ?", [user_id])
+    db.connection.commit()
+    
+    flash("User deleted successfully!", "success")
+    return redirect(url_for('view_users'))
+
 if __name__ == '__main__':
     app.run(debug=True)
