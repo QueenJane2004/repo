@@ -1,7 +1,6 @@
 import sqlite3
-import os
 
-DB_PATH = "library.db"
+DB_PATH = "library_v2.db"  # We changed this to v2 to force Render to create a fresh file
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
@@ -20,7 +19,6 @@ def init_db():
                 role TEXT DEFAULT 'user'
             );
             
-            /* UPDATED BOOKS TABLE */
             CREATE TABLE IF NOT EXISTS books (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -42,8 +40,7 @@ def init_db():
                 fine_amount REAL DEFAULT 0
             );
         """)
-        
-        # Create default admin if it doesn't exist
+        # Create default admin
         cur = conn.cursor()
         admin = cur.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
         if not admin:
@@ -52,15 +49,13 @@ def init_db():
         conn.commit()
 
 def query_db(query, args=(), one=False):
-    query = query.replace("%s", "?")
     try:
         with get_conn() as conn:
             cur = conn.cursor()
             cur.execute(query, args)
             if query.strip().upper().startswith("SELECT"):
                 result = cur.fetchall()
-                dict_result = [dict(row) for row in result]
-                return dict_result[0] if one and dict_result else (None if one else dict_result)
+                return (dict(result[0]) if result else None) if one else [dict(row) for row in result]
             conn.commit()
             return None
     except Exception as e:
