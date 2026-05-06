@@ -127,13 +127,20 @@ def view_users():
 # --- ACTION ROUTES ---
 
 @app.route('/add_book', methods=['POST'])
-@login_required
-@admin_required
 def add_book():
-    t, a, q = request.form.get('title'), request.form.get('author'), request.form.get('quantity')
-    barcode = 'B' + ''.join(random.choices(string.digits, k=6))
-    db.query_db("INSERT INTO books (title, author, barcode, quantity) VALUES (?, ?, ?, ?)", (t, a, barcode, q))
-    flash("Book added successfully.", "success")
+    title = request.form.get('title')
+    author = request.form.get('author')
+    publisher = request.form.get('publisher')
+    description = request.form.get('description')
+    image_url = request.form.get('image_url') # Make sure your form has this name!
+    barcode = request.form.get('barcode')
+    quantity = request.form.get('quantity', 1)
+
+    query_db("""
+        INSERT INTO books (title, author, publisher, description, image_url, barcode, quantity) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (title, author, publisher, description, image_url, barcode, quantity))
+    
     return redirect(url_for('manage_books'))
 
 @app.route('/borrow/<int:book_id>', methods=['POST'])
