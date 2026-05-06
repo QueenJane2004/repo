@@ -9,6 +9,8 @@
     <style>
         :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
         body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        /* Sidebar Styling */
         .sidebar {
             width: 240px; min-height: 100vh;
             background: var(--gradient-main);
@@ -26,7 +28,11 @@
             background: rgba(255,255,255,0.15); color: white;
         }
         .sidebar .nav-link i { width: 20px; }
+        
+        /* Main Content Styling */
         .main-content { margin-left: 240px; padding: 2rem; }
+        
+        /* Dashboard Cards */
         .stat-card {
             border: none; border-radius: 18px;
             padding: 1.5rem; color: white;
@@ -39,13 +45,16 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 1.4rem; margin-bottom: 1rem;
         }
+        
         .section-card {
             background: white; border: none;
             border-radius: 18px; padding: 1.5rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.06);
             margin-bottom: 1.5rem;
         }
+        
         .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
+        
         @media (max-width: 768px) {
             .sidebar { width: 100%; min-height: auto; position: relative; }
             .main-content { margin-left: 0; }
@@ -62,13 +71,21 @@
                 <i class="fas fa-tachometer-alt me-2"></i>Dashboard
             </a>
             <a href="{{ url_for('manage_books') }}" class="nav-link">
-                <i class="fas fa-books me-2"></i>Manage Books
+                <i class="fas fa-book me-2"></i>Manage Books
             </a>
+            
+            <!-- FIXED: Point to 'borrow_books' -->
+            <a href="{{ url_for('borrow_books') }}" class="nav-link">
+                <i class="fas fa-hand-holding me-2"></i>Borrow Books
+            </a>
+            
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
+            
+            <!-- FIXED: Point to 'activity_logs' -->
             <a href="{{ url_for('transactions_log') }}" class="nav-link">
-                <i class="fas fa-history me-2"></i>Transactions
+                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
             </a>
         </nav>
         <div class="mt-auto pt-3">
@@ -83,10 +100,11 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h4 class="fw-bold mb-0">Dashboard</h4>
-                <p class="text-muted small mb-0">Welcome back, {{ session.firstname }}!</p>
+                <p class="text-muted small mb-0">Welcome back, Admin!</p>
             </div>
         </div>
 
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for cat, msg in messages %}
                 <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
@@ -95,7 +113,7 @@
             {% endfor %}{% endif %}
         {% endwith %}
 
-        <!-- Stats -->
+        <!-- Stats Section -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card" style="background: linear-gradient(135deg,#6366f1,#8b5cf6);">
@@ -121,7 +139,7 @@
         </div>
 
         <div class="row g-3">
-            <!-- Trending Books -->
+            <!-- Trending Books Section -->
             <div class="col-lg-6">
                 <div class="section-card">
                     <h6 class="fw-bold mb-3"><i class="fas fa-fire text-danger me-2"></i>Trending Books</h6>
@@ -148,7 +166,7 @@
                 </div>
             </div>
 
-            <!-- All Users Quick View -->
+            <!-- Users Quick View Section -->
             <div class="col-lg-6">
                 <div class="section-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -159,13 +177,17 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead><tr><th>Name</th><th>Role</th><th>Username</th></tr></thead>
                             <tbody>
-                                {% for user in all_users[:8] %}
-                                <tr>
-                                    <td class="fw-semibold small">{{ user.firstname }} {{ user.lastname }}</td>
-                                    <td><span class="badge bg-light text-dark border">{{ user.role }}</span></td>
-                                    <td class="text-muted small">{{ user.username }}</td>
-                                </tr>
-                                {% endfor %}
+                                {% if all_users %}
+                                    {% for user in all_users[:8] %}
+                                    <tr>
+                                        <td class="fw-semibold small">{{ user.firstname }} {{ user.lastname }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ user.role }}</span></td>
+                                        <td class="text-muted small">{{ user.username }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="3" class="text-center text-muted small">No users found.</td></tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
