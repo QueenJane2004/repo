@@ -198,6 +198,15 @@ def borrow_books():
     return render_template('borrow.html')
 
 
+
+@app.route('/checkout/<int:book_id>', methods=['POST'])
+@login_required
+def checkout(book_id):
+    # For now, just redirect back until you write the logic
+    flash("Checkout logic not implemented yet!", "info")
+    return redirect(url_for('user_dashboard'))
+
+
 # --- USER ROUTES ---
 
 @app.route('/user')
@@ -205,7 +214,10 @@ def borrow_books():
 def user_dashboard():
     books = db.query_db("SELECT * FROM books ORDER BY id DESC")
     recs = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4")
-    return render_template('user.html', books=books, recommendations=recs)
+    # Add these lines:
+    user_limit = 5 
+    fines = 0
+    return render_template('user.html', books=books, recommendations=recs, limit=user_limit, total_fine=fines)
 
 if __name__ == '__main__':
     app.run(debug=True)
