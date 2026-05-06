@@ -10,6 +10,7 @@
         :root { --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%); }
         body { background: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
         
+        /* Sidebar Styling */
         .sidebar {
             width: 240px; min-height: 100vh;
             background: var(--gradient-main);
@@ -17,29 +18,26 @@
             z-index: 100; padding: 2rem 1rem;
             display: flex; flex-direction: column;
         }
-        
         .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
-        
         .sidebar .nav-link {
             color: rgba(255,255,255,0.75); border-radius: 12px;
             padding: 0.75rem 1rem; margin-bottom: 4px;
             transition: all 0.2s; font-size: 0.9rem;
         }
-        
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
             background: rgba(255,255,255,0.15); color: white;
         }
-        
         .sidebar .nav-link i { width: 20px; }
         
+        /* Main Content Styling */
         .main-content { margin-left: 240px; padding: 2rem; }
         
+        /* Dashboard Cards */
         .stat-card {
             border: none; border-radius: 18px;
             padding: 1.5rem; color: white;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-        
         .stat-card .stat-icon {
             width: 52px; height: 52px;
             background: rgba(255,255,255,0.2);
@@ -73,17 +71,20 @@
                 <i class="fas fa-tachometer-alt me-2"></i>Dashboard
             </a>
             <a href="{{ url_for('manage_books') }}" class="nav-link">
-                <i class="fas fa-books me-2"></i>Manage Books
+                <i class="fas fa-book me-2"></i>Manage Books
+            </a>
+            <!-- NEW: Borrow Management Link -->
+            <a href="{{ url_for('admin_borrow_manage') }}" class="nav-link">
+                <i class="fas fa-hand-holding me-2"></i>Borrow Books
             </a>
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
-            <!-- Added Transaction Log link to match app.py -->
-            <a href="{{ url_for('transactions_log') }}" class="nav-link">
-                <i class="fas fa-history me-2"></i>Transaction Logs
+            <!-- NEW: Activity Logs Link -->
+            <a href="{{ url_for('activity_logs') }}" class="nav-link">
+                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
             </a>
         </nav>
-        
         <div class="mt-auto pt-3">
             <a href="{{ url_for('logout') }}" class="nav-link text-danger-emphasis">
                 <i class="fas fa-sign-out-alt me-2"></i>Logout
@@ -91,7 +92,7 @@
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -100,17 +101,16 @@
             </div>
         </div>
 
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for cat, msg in messages %}
-                    <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
-                        {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
+                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}{% endif %}
         {% endwith %}
 
-        <!-- Stats Cards -->
+        <!-- Stats Section -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card" style="background: linear-gradient(135deg,#6366f1,#8b5cf6);">
@@ -143,13 +143,7 @@
                     {% if trending_books %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Title</th>
-                                    <th>Borrows</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>#</th><th>Title</th><th>Borrows</th></tr></thead>
                             <tbody>
                                 {% for book in trending_books %}
                                 <tr>
@@ -169,7 +163,7 @@
                 </div>
             </div>
 
-            <!-- Recent Members Section -->
+            <!-- Users Quick View Section -->
             <div class="col-lg-6">
                 <div class="section-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -178,13 +172,7 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>Username</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Name</th><th>Role</th><th>Username</th></tr></thead>
                             <tbody>
                                 {% for user in all_users[:8] %}
                                 <tr>
