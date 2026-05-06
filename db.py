@@ -1,16 +1,19 @@
 import sqlite3
 import os
 
+# No environment variables needed for SQLite
 DB_PATH = "library.db"
 
 def get_conn():
+    # Use sqlite3 instead of psycopg
     conn = sqlite3.connect(DB_PATH)
-    # This allows app.py to use user['id'] instead of user[0]
+    # This line is REQUIRED for user['id'] to work in app.py
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
     with get_conn() as conn:
+        # Executescript handles multiple CREATE TABLE commands
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +23,6 @@ def init_db():
                 lastname TEXT,
                 role TEXT DEFAULT 'user'
             );
-
             CREATE TABLE IF NOT EXISTS books (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -28,7 +30,6 @@ def init_db():
                 barcode TEXT UNIQUE,
                 quantity INTEGER DEFAULT 1
             );
-
             CREATE TABLE IF NOT EXISTS loans (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 book_id INTEGER REFERENCES books(id),
@@ -40,16 +41,16 @@ def init_db():
             );
         """)
         
-        # This part ensures 'admin' exists so you don't get a 500 error on login
+        # Create the admin account automatically
         cur = conn.cursor()
-        admin = cur.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
-        if not admin:
+        admin_exists = cur.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
+        if not admin_exists:
             cur.execute("INSERT INTO users (username, password, firstname, role) VALUES (?, ?, ?, ?)",
                         ('admin', 'admin123', 'System', 'admin'))
         conn.commit()
 
 def query_db(query, args=(), one=False):
-    # Standardize placeholders for SQLite
+    # SQLite uses '?' instead of '%s'
     query = query.replace("%s", "?")
     try:
         with get_conn() as conn:
@@ -57,10 +58,10 @@ def query_db(query, args=(), one=False):
             cur.execute(query, args)
             if query.strip().upper().startswith("SELECT"):
                 result = cur.fetchall()
+                # Convert to dictionaries for app.py
                 dict_result = [dict(row) for row in result]
                 return dict_result[0] if one and dict_result else (None if one else dict_result)
             conn.commit()
             return None
     except Exception as e:
-        print(f"DB Error: {e}")
         return None if one else []
