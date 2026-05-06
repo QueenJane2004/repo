@@ -15,6 +15,7 @@
             position: fixed; top: 0; left: 0;
             z-index: 100; padding: 2rem 1rem;
             display: flex; flex-direction: column;
+            overflow-y: auto;
         }
         .sidebar .brand { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 2rem; }
         .sidebar .nav-link {
@@ -22,10 +23,16 @@
             padding: 0.75rem 1rem; margin-bottom: 4px;
             transition: all 0.2s; font-size: 0.9rem;
         }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background: rgba(255,255,255,0.15); color: white;
-        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.15); color: white; }
         .sidebar .nav-link i { width: 20px; }
+        .borrow-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+        .borrow-toggle .chevron { font-size: 0.7rem; transition: transform 0.25s; }
+        .borrow-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+        .submenu { padding-left: 0.5rem; margin-bottom: 4px; }
+        .submenu .nav-link { font-size: 0.82rem; padding: 0.5rem 1rem 0.5rem 2rem; border-radius: 10px; display: flex; align-items: center; gap: 8px; }
+        .submenu .nav-link .sub-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); flex-shrink: 0; transition: background 0.2s; }
+        .submenu .nav-link:hover .sub-dot, .submenu .nav-link.active .sub-dot { background: white; }
+        .sub-icon { width: 16px; font-size: 0.8rem; }
         .main-content { margin-left: 240px; padding: 2rem; }
         .section-card {
             background: white; border: none;
@@ -45,7 +52,6 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="brand"><i class="fas fa-book-open-reader me-2"></i>Library Admin</div>
         <nav class="nav flex-column">
@@ -55,9 +61,17 @@
             <a href="{{ url_for('manage_books') }}" class="nav-link">
                 <i class="fas fa-book me-2"></i>Manage Books
             </a>
-            <a href="{{ url_for('borrow_books') }}" class="nav-link">
-                <i class="fas fa-hand-holding me-2"></i>Borrow Books
+            <a class="nav-link borrow-toggle" data-bs-toggle="collapse" data-bs-target="#borrowSubmenu" aria-expanded="false" aria-controls="borrowSubmenu">
+                <span><i class="fas fa-hand-holding me-2"></i>Borrow Books</span>
+                <i class="fas fa-chevron-down chevron"></i>
             </a>
+            <div class="collapse submenu" id="borrowSubmenu">
+                <a href="{{ url_for('borrow_pending') }}"   class="nav-link"><span class="sub-dot"></span><i class="fas fa-hourglass-half sub-icon"></i>Pending</a>
+                <a href="{{ url_for('borrow_approve') }}"   class="nav-link"><span class="sub-dot"></span><i class="fas fa-check-circle   sub-icon"></i>Approve</a>
+                <a href="{{ url_for('borrow_on_borrow') }}" class="nav-link"><span class="sub-dot"></span><i class="fas fa-book-reader    sub-icon"></i>On Borrow</a>
+                <a href="{{ url_for('borrow_cancel') }}"    class="nav-link"><span class="sub-dot"></span><i class="fas fa-times-circle  sub-icon"></i>Cancel</a>
+                <a href="{{ url_for('borrow_return') }}"    class="nav-link"><span class="sub-dot"></span><i class="fas fa-undo-alt      sub-icon"></i>Return</a>
+            </div>
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
@@ -72,11 +86,10 @@
         </div>
     </div>
 
-    <!-- Main -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4 no-print">
             <div>
-                <h4 class="fw-bold mb-0">Activity Logs</h4>
+                <h4 class="fw-bold mb-0"><i class="fas fa-clipboard-list me-2 text-primary"></i>Activity Logs</h4>
                 <p class="text-muted small mb-0">Complete borrowing history</p>
             </div>
             <button class="btn btn-outline-primary rounded-pill px-4" onclick="window.print()">
@@ -86,25 +99,29 @@
 
         <!-- Summary Stats -->
         <div class="row g-3 mb-4 no-print">
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="section-card text-center py-3">
                     <div class="fs-3 fw-bold text-primary">{{ logs | length }}</div>
                     <div class="text-muted small">Total Records</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="section-card text-center py-3">
-                    <div class="fs-3 fw-bold text-success">{{ logs | selectattr('return_date') | list | length }}</div>
+                    <div class="fs-3 fw-bold text-warning">
+                        {{ logs | selectattr('status', 'equalto', 'pending') | list | length }}
+                    </div>
+                    <div class="text-muted small">Pending</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="section-card text-center py-3">
+                    <div class="fs-3 fw-bold text-success">
+                        {{ logs | selectattr('status', 'equalto', 'returned') | list | length }}
+                    </div>
                     <div class="text-muted small">Returned</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="section-card text-center py-3">
-                    <div class="fs-3 fw-bold text-warning">{{ logs | rejectattr('return_date') | list | length }}</div>
-                    <div class="text-muted small">Currently Borrowed</div>
-                </div>
-            </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="section-card text-center py-3">
                     <div class="fs-3 fw-bold text-danger">
                         ₱{{ logs | sum(attribute='fine_amount') | int }}
@@ -114,14 +131,26 @@
             </div>
         </div>
 
-        <!-- Search -->
+        <!-- Filter + Search -->
         <div class="section-card mb-4 no-print">
-            <div class="input-group">
-                <span class="input-group-text bg-transparent border-0">
-                    <i class="fas fa-search text-muted"></i>
-                </span>
-                <input type="text" id="logSearch" class="form-control border-0 shadow-none"
-                       placeholder="Search by member, book title...">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" id="logSearch" class="form-control border-0 shadow-none"
+                               placeholder="Search by member or book title...">
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill filter-btn active" data-filter="all">All</button>
+                    <button class="btn btn-sm btn-outline-warning  rounded-pill filter-btn" data-filter="pending">Pending</button>
+                    <button class="btn btn-sm btn-outline-primary  rounded-pill filter-btn" data-filter="approved">Approved</button>
+                    <button class="btn btn-sm btn-outline-danger   rounded-pill filter-btn" data-filter="overdue">Overdue</button>
+                    <button class="btn btn-sm btn-outline-success  rounded-pill filter-btn" data-filter="returned">Returned</button>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill filter-btn" data-filter="cancelled">Cancelled</button>
+                </div>
             </div>
         </div>
 
@@ -144,12 +173,20 @@
                     </thead>
                     <tbody>
                         {% for log in logs %}
-                        <tr class="log-row">
+                        <tr class="log-row"
+                            data-status="
+                                {%- if log.status == 'returned' -%}returned
+                                {%- elif log.status == 'cancelled' -%}cancelled
+                                {%- elif log.status == 'pending' -%}pending
+                                {%- elif log.status == 'approved' and log.due_date < now and not log.return_date -%}overdue
+                                {%- elif log.status == 'approved' -%}approved
+                                {%- else -%}approved
+                                {%- endif -%}">
                             <td class="text-muted small">{{ loop.index }}</td>
                             <td class="fw-semibold small">{{ log.username }}</td>
                             <td class="small">{{ log.book_title }}</td>
                             <td class="text-muted small">{{ log.issue_date }}</td>
-                            <td class="small {{ 'text-danger fw-bold' if not log.return_date and log.due_date < now else '' }}">
+                            <td class="small {{ 'text-danger fw-bold' if log.status == 'approved' and not log.return_date and log.due_date < now else '' }}">
                                 {{ log.due_date }}
                             </td>
                             <td class="text-muted small">
@@ -163,12 +200,30 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if log.return_date %}
-                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Returned</span>
-                                {% elif log.due_date < now %}
-                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Overdue</span>
+                                {% if log.status == 'returned' %}
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill">
+                                        <i class="fas fa-check me-1"></i>Returned
+                                    </span>
+                                {% elif log.status == 'cancelled' %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">
+                                        <i class="fas fa-times me-1"></i>Cancelled
+                                    </span>
+                                {% elif log.status == 'pending' %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">
+                                        <i class="fas fa-hourglass-half me-1"></i>Pending
+                                    </span>
+                                {% elif log.status == 'approved' and log.due_date < now and not log.return_date %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">
+                                        <i class="fas fa-exclamation-circle me-1"></i>Overdue
+                                    </span>
+                                {% elif log.status == 'approved' %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">
+                                        <i class="fas fa-book-reader me-1"></i>Active
+                                    </span>
                                 {% else %}
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Active</span>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">
+                                        {{ log.status | capitalize }}
+                                    </span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -187,10 +242,30 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Search filter
         document.getElementById('logSearch').addEventListener('input', function () {
             const q = this.value.toLowerCase();
             document.querySelectorAll('.log-row').forEach(row => {
-                row.classList.toggle('d-none', !row.textContent.toLowerCase().includes(q));
+                const matchSearch = row.textContent.toLowerCase().includes(q);
+                row.classList.toggle('d-none', !matchSearch);
+            });
+        });
+
+        // Status filter buttons
+        let activeFilter = 'all';
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                activeFilter = this.dataset.filter;
+
+                document.querySelectorAll('.log-row').forEach(row => {
+                    const status = row.dataset.status.trim();
+                    const searchVal = document.getElementById('logSearch').value.toLowerCase();
+                    const matchSearch = row.textContent.toLowerCase().includes(searchVal);
+                    const matchFilter = activeFilter === 'all' || status === activeFilter;
+                    row.classList.toggle('d-none', !(matchSearch && matchFilter));
+                });
             });
         });
     </script>
