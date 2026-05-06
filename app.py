@@ -94,20 +94,16 @@ def manage_books():
     books = db.query_db("SELECT * FROM books ORDER BY id DESC")
     return render_template('manage_books.html', books=books)
 
-@app.route('/transactions')
+@app.route('/borrow_books')
 @login_required
-def transactions_log():
-    """Route for 'Borrowing Records' and 'History' sidebar links."""
-    if session['role'] == 'admin':
-        tx = db.query_db("""
-            SELECT l.*, b.title as book_title, u.username 
-            FROM loans l JOIN books b ON b.id = l.book_id 
-            JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
-    else:
-        tx = db.query_db("SELECT l.*, b.title as book_title FROM loans l JOIN books b ON b.id = l.book_id WHERE l.user_id = ?", (session['user_id'],))
-    
-    # We use transactions_log.html for both 'Records' and 'History' per your template setup
-    return render_template('transactions_log.html', transactions=tx, is_admin=(session['role'] == 'admin'))
+@admin_required
+def borrow_books():
+    """Route for the 'Borrow Books' sidebar link."""
+    tx = db.query_db("""
+        SELECT l.*, b.title as book_title, u.username 
+        FROM loans l JOIN books b ON b.id = l.book_id 
+        JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
+    return render_template('borrow_books.html', transactions=tx)
 
 @app.route('/view_users')
 @login_required
@@ -116,6 +112,32 @@ def view_users():
     """Route for the 'Users' sidebar link."""
     users = db.query_db("SELECT * FROM users ORDER BY id DESC")
     return render_template('view_users.html', all_users=users)
+
+@app.route('/activity_logs')
+@login_required
+@admin_required
+def activity_logs():
+    """Route for the 'Activity Logs' sidebar link."""
+    # Using loan records as a proxy for activity history
+    logs = db.query_db("""
+        SELECT l.*, b.title as book_title, u.username 
+        FROM loans l JOIN books b ON b.id = l.book_id 
+        JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
+    return render_template('activity_logs.html', logs=logs)
+
+@app.route('/transactions')
+@login_required
+def transactions_log():
+    """Route for general History sidebar links."""
+    if session['role'] == 'admin':
+        tx = db.query_db("""
+            SELECT l.*, b.title as book_title, u.username 
+            FROM loans l JOIN books b ON b.id = l.book_id 
+            JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
+    else:
+        tx = db.query_db("SELECT l.*, b.title as book_title FROM loans l JOIN books b ON b.id = l.book_id WHERE l.user_id = ?", (session['user_id'],))
+    
+    return render_template('transactions_log.html', transactions=tx, is_admin=(session['role'] == 'admin'))
 
 # --- ACTION ROUTES ---
 
@@ -152,7 +174,7 @@ def return_book(loan_id):
         db.query_db("UPDATE loans SET return_date = ? WHERE id = ?", (datetime.now().strftime('%Y-%m-%d'), loan_id))
         db.query_db("UPDATE books SET quantity = quantity + 1 WHERE id = ?", (loan['book_id'],))
         flash("Book returned.", "success")
-    return redirect(url_for('transactions_log'))
+    return redirect(url_for('borrow_books'))
 
 # --- USER ROUTES ---
 @app.route('/user')
