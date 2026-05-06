@@ -190,6 +190,14 @@ def update_book_qty():
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
 
+
+@app.route('/borrow_books')
+@login_required
+def borrow_books():
+    # Your logic here
+    return render_template('borrow.html')
+
+
 # --- USER ROUTES ---
 
 @app.route('/user')
