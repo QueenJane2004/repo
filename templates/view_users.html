@@ -168,7 +168,6 @@
                             <th>Username</th>
                             <th>Role</th>
                             <th>Account Type</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -192,21 +191,9 @@
                                 <span class="badge bg-primary bg-opacity-10 text-primary">Member</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if user.role != 'admin' %}
-                                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST"
-                                      onsubmit="return confirm('Delete user {{ user.username }}? This will also remove their loan records.')">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                {% else %}
-                                <span class="text-muted small">—</span>
-                                {% endif %}
-                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="5" class="text-center text-muted py-4">No users registered yet.</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted py-4">No users registered yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
