@@ -87,11 +87,9 @@ def admin_dashboard():
                            trending_books=trending)
 
 @app.route('/manage_books')
-@login_required
-@admin_required
 def manage_books():
-    """Renders manage_books.html"""
-    books = db.query_db("SELECT * FROM books ORDER BY id DESC")
+    # Make sure you are selecting all columns from the new books table
+    books = query_db("SELECT * FROM books")
     return render_template('manage_books.html', books=books)
 
 @app.route('/borrow_books')
