@@ -73,16 +73,16 @@
             <a href="{{ url_for('manage_books') }}" class="nav-link">
                 <i class="fas fa-book me-2"></i>Manage Books
             </a>
-            <!-- NEW: Borrow Management Link -->
-            <a href="{{ url_for('admin_borrow_manage') }}" class="nav-link">
-                <i class="fas fa-hand-holding me-2"></i>Borrow Books
+            <!-- FIX: Linked to transactions_log instead of missing route -->
+            <a href="{{ url_for('transactions_log') }}" class="nav-link">
+                <i class="fas fa-hand-holding me-2"></i>Borrowing Records
             </a>
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
-            <!-- NEW: Activity Logs Link -->
-            <a href="{{ url_for('activity_logs') }}" class="nav-link">
-                <i class="fas fa-clipboard-list me-2"></i>Activity Logs
+            <!-- FIX: Linked to transactions_log as a placeholder for Activity -->
+            <a href="{{ url_for('transactions_log') }}" class="nav-link">
+                <i class="fas fa-clipboard-list me-2"></i>History
             </a>
         </nav>
         <div class="mt-auto pt-3">
@@ -174,13 +174,17 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead><tr><th>Name</th><th>Role</th><th>Username</th></tr></thead>
                             <tbody>
-                                {% for user in all_users[:8] %}
-                                <tr>
-                                    <td class="fw-semibold small">{{ user.firstname }} {{ user.lastname }}</td>
-                                    <td><span class="badge bg-light text-dark border">{{ user.role }}</span></td>
-                                    <td class="text-muted small">{{ user.username }}</td>
-                                </tr>
-                                {% endfor %}
+                                {% if all_users %}
+                                    {% for user in all_users[:8] %}
+                                    <tr>
+                                        <td class="fw-semibold small">{{ user.firstname }} {{ user.lastname }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ user.role }}</span></td>
+                                        <td class="text-muted small">{{ user.username }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="3" class="text-center text-muted small">No users found.</td></tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
