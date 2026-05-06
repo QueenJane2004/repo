@@ -145,10 +145,14 @@ def transactions_log():
 
 
 @app.route('/checkout/<int:book_id>', methods=['POST'])
-@login_required
 def checkout(book_id):
-    # Your logic for borrowing goes here
-    flash("Book checked out!", "success")
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Placeholder for borrowing logic
+    # (e.g., db.query_db("INSERT INTO loans ..."))
+    
+    flash("Book borrowed successfully!", "success")
     return redirect(url_for('user_dashboard'))
 
 
