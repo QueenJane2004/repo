@@ -237,6 +237,13 @@ def user_dashboard():
 
 
 
+@app.route('/ai_chat', methods=['POST'])
+def ai_chat():
+    # This placeholder prevents the 'BuildError' in user.html
+    return {"response": "AI feature is currently in development."}
+
+
+
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     # Security check: Ensure only admins can delete users
@@ -251,11 +258,6 @@ def delete_user(user_id):
     return redirect(url_for('view_users'))
 
 
-
-@app.route('/ai_chat', methods=['POST'])
-def ai_chat():
-    # Placeholder for the AI chat functionality
-    return {"response": "AI feature coming soon!"}
 
 if __name__ == '__main__':
     app.run(debug=True)
