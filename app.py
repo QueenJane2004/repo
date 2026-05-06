@@ -250,5 +250,12 @@ def delete_user(user_id):
     flash("User deleted successfully!", "success")
     return redirect(url_for('view_users'))
 
+
+
+@app.route('/ai_chat', methods=['POST'])
+def ai_chat():
+    # Placeholder for the AI chat functionality
+    return {"response": "AI feature coming soon!"}
+
 if __name__ == '__main__':
     app.run(debug=True)
