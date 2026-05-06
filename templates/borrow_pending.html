@@ -91,7 +91,7 @@
         <div class="section-card">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Status</th></tr></thead>
                     <tbody>
                         {% for loan in active_loans %}
                         <tr>
@@ -100,16 +100,9 @@
                             <td class="text-muted small">{{ loan.issue_date }}</td>
                             <td class="small">{{ loan.due_date }}</td>
                             <td><span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">Pending</span></td>
-                            <td>
-                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST" class="d-inline">
-                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                        <i class="fas fa-undo me-1"></i>Return
-                                    </button>
-                                </form>
-                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="6" class="text-center text-muted small py-4">No pending borrow requests today.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted small py-4">No pending borrow requests today.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
