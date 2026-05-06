@@ -50,23 +50,35 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Using .strip() ensures that "admin " becomes "admin"
+        # 1. Get and clean inputs
         u = request.form.get('username', '').strip()
         p = request.form.get('password', '').strip()
         
-        # Check database for exact match
-        user = db.query_db("SELECT * FROM users WHERE username = ? AND password = ?", (u, p), one=True)
+        if not u or not p:
+            flash("Please provide both username and password.", "warning")
+            return render_template('login.html')
+
+        # 2. Query the database
+        # Ensure your query selects the specific columns you need to access later
+        user = db.query_db("SELECT id, username, password, role, firstname FROM users WHERE username = ?", (u,), one=True)
         
-        if user:
+        # 3. Check if user exists and password matches
+        if user and user['password'] == p:
+            # Clear any old session data first
+            session.clear()
+            
             # Store data in session
-            session.update({
-                'user_id': user['id'], 
-                'role': user['role'], 
-                'firstname': user['firstname']
-            })
-            return redirect(url_for('index'))
+            session['user_id'] = user['id']
+            session['role'] = user['role']
+            session['firstname'] = user['firstname']
+            
+            # 4. Redirect based on role
+            if user['role'] == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            else:
+                return redirect(url_for('user_dashboard'))
         
-        # If no user found, show error
+        # 5. If login fails
         flash("Invalid username or password.", "danger")
         
     return render_template('login.html')
