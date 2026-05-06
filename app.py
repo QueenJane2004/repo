@@ -81,7 +81,6 @@ def admin_dashboard():
 @login_required
 @admin_required
 def manage_books():
-    # Use db.query_db (not query_db)
     books = db.query_db("SELECT * FROM books ORDER BY id DESC")
     return render_template('manage_books.html', books=books)
 
@@ -114,7 +113,7 @@ def add_book():
     description = request.form.get('description')
     quantity = request.form.get('quantity', 1)
     
-    # Critical Fix: Generate barcode and image_url since DB needs them
+    # Auto-generate barcode and handle image as None for now
     barcode = str(uuid.uuid4().hex[:8]).upper()
     image_url = None 
 
