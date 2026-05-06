@@ -59,7 +59,7 @@
                 <a href="{{ url_for('borrow_approve') }}"   class="nav-link {% if request.endpoint == 'borrow_approve'   %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-check-circle   sub-icon"></i>Approve</a>
                 <a href="{{ url_for('borrow_on_borrow') }}" class="nav-link {% if request.endpoint == 'borrow_on_borrow' %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-book-reader    sub-icon"></i>On Borrow</a>
                 <a href="{{ url_for('borrow_cancel') }}"    class="nav-link {% if request.endpoint == 'borrow_cancel'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-times-circle  sub-icon"></i>Cancel</a>
-                <a href="{{ url_for('borrow_return') }}"    class="nav-link {% if request.endpoint == 'borrow_return'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-undo-alt      sub-icon"></i>Return</a>
+                <a href="{{ url_for('return') }}"    class="nav-link {% if request.endpoint == 'borrow_return'    %}active{% endif %}"><span class="sub-dot"></span><i class="fas fa-undo-alt      sub-icon"></i>Return</a>
             </div>
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users

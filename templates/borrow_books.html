@@ -134,7 +134,7 @@
                 <span class="sub-dot"></span>
                 <i class="fas fa-times-circle me-1" style="width:16px;font-size:0.8rem;"></i>Cancel
             </a>
-            <a href="{{ url_for('borrow_return') }}" class="nav-link {% if request.endpoint in ['borrow_return', 'borrow_books'] %}active{% endif %}">
+            <a href="{{ url_for('return') }}" class="nav-link {% if request.endpoint in ['borrow_return', 'borrow_books'] %}active{% endif %}">
                 <span class="sub-dot"></span>
                 <i class="fas fa-undo-alt me-1" style="width:16px;font-size:0.8rem;"></i>Return
             </a>
