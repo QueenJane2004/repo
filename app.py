@@ -142,10 +142,8 @@ def checkout(book_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    # Placeholder for borrowing logic
-    # (e.g., db.query_db("INSERT INTO loans ..."))
-    
-    flash("Book borrowed successfully!", "success")
+    # For now, just a success message
+    flash(f"Book {book_id} requested!", "success")
     return redirect(url_for('user_dashboard'))
 
 
@@ -210,21 +208,20 @@ def borrow_books():
 
 @app.route('/user')
 def user_dashboard():
-    # Force Login
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    # Redirect Admin away from User page
+    # Security: If an admin tries to go to /user, send them back to /admin
     if session.get('role') == 'admin':
         return redirect(url_for('admin_dashboard'))
 
-    # Fetch data for user.html
-    books = db.query_db("SELECT * FROM books ORDER BY id DESC")
+    # Get the books from the database
+    books = db.query_db("SELECT * FROM books")
     recs = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4")
     
-    # Ensure 'limit' and 'total_fine' are passed so user.html doesn't crash
+    # FIX: Define the variables your HTML is asking for
     user_limit = 5 
-    fines = 0 # Replace with actual fine calculation if available
+    fines = 0  # You can replace this with a SQL query later
     
     return render_template('user.html', 
                            books=books, 
