@@ -208,14 +208,12 @@ def checkout(book_id):
         flash(f"You can only borrow {remaining} more book(s). Your limit is {BORROW_LIMIT}.", "warning")
         return redirect(url_for('user_dashboard'))
 
-    # Deduct quantity immediately to reserve the book
     db.query_db("UPDATE books SET quantity = quantity - ? WHERE id = ?", [borrow_qty, book_id])
 
     today      = datetime.today()
     issue_date = today.strftime('%Y-%m-%d')
     due_date   = (today + timedelta(days=LOAN_DAYS)).strftime('%Y-%m-%d')
 
-    # Insert with status = 'pending' — admin must approve
     for _ in range(borrow_qty):
         db.query_db(
             "INSERT INTO loans (user_id, book_id, issue_date, due_date, status) VALUES (?, ?, ?, ?, 'pending')",
@@ -257,7 +255,6 @@ def cancel_book(loan_id):
         flash("Loan not found or already processed.", "danger")
         return redirect(url_for('borrow_cancel'))
 
-    # Restore book quantity since the request is cancelled
     db.query_db("UPDATE books SET quantity = quantity + 1 WHERE id = ?", [loan['book_id']])
     db.query_db(
         "UPDATE loans SET status = 'cancelled', return_date = ? WHERE id = ?",
@@ -365,7 +362,6 @@ def _get_loans_data():
     today = datetime.today()
     now   = today.strftime('%Y-%m-%d')
 
-    # Pending loans (awaiting admin approval)
     pending_loans = db.query_db("""
         SELECT l.*, b.title as book_title, b.author, b.image_url, u.username
         FROM loans l
@@ -375,7 +371,6 @@ def _get_loans_data():
         ORDER BY l.issue_date ASC
     """) or []
 
-    # Approved / active loans
     active_loans = db.query_db("""
         SELECT l.*, b.title as book_title, b.author, b.image_url, u.username
         FROM loans l
@@ -385,7 +380,6 @@ def _get_loans_data():
         ORDER BY l.due_date ASC
     """) or []
 
-    # Cancelled loans
     cancelled_loans = db.query_db("""
         SELECT l.*, b.title as book_title, b.author, u.username
         FROM loans l
@@ -396,7 +390,6 @@ def _get_loans_data():
         LIMIT 50
     """) or []
 
-    # Returned loans
     returned_loans = db.query_db("""
         SELECT l.*, b.title as book_title, u.username
         FROM loans l
@@ -450,7 +443,7 @@ def borrow_pending():
 def borrow_approve():
     pending_loans, active_loans, cancelled_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
     return render_template('borrow_approve.html',
-                           active_loans=pending_loans,   # pending = waiting for approval
+                           active_loans=pending_loans,
                            returned_loans=returned_loans,
                            total_fine=total_fine,
                            overdue_count=overdue_count,
@@ -463,7 +456,7 @@ def borrow_approve():
 def borrow_on_borrow():
     pending_loans, active_loans, cancelled_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
     return render_template('borrow_on_borrow.html',
-                           active_loans=active_loans,    # approved & not yet returned
+                           active_loans=active_loans,
                            returned_loans=returned_loans,
                            total_fine=total_fine,
                            overdue_count=overdue_count,
@@ -494,13 +487,12 @@ def borrow_return():
     if is_admin:
         pending_loans, active_loans, cancelled_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
         return render_template('borrow_return.html',
-                               returned_loans=returned_loans,   # ← was missing
+                               returned_loans=returned_loans,
                                active_loans=active_loans,
                                total_fine=total_fine,
                                overdue_count=overdue_count,
                                now=now)
     else:
-        # ... rest of user branch unchanged
         active_loans = db.query_db("""
             SELECT l.*, b.title as book_title, b.author, b.image_url
             FROM loans l
@@ -574,6 +566,38 @@ def user_dashboard():
                            recommendations=recs,
                            limit=5 - active_count,
                            total_fine=total_fine)
+
+
+# --- USER TRANSACTION HISTORY ---
+
+@app.route('/transactions')
+@login_required
+def transactions():
+    user_id = session['user_id']
+
+    txs = db.query_db("""
+        SELECT l.*, b.title, b.author, b.image_url, b.barcode,
+               l.issue_date as borrow_date, l.fine_amount as fine, l.fine_paid
+        FROM loans l
+        JOIN books b ON b.id = l.book_id
+        WHERE l.user_id = ?
+        ORDER BY l.id DESC
+    """, [user_id]) or []
+
+    today = datetime.today()
+    for tx in txs:
+        if tx['return_date'] is None and tx['status'] == 'approved':
+            due = datetime.strptime(tx['due_date'], '%Y-%m-%d')
+            tx['status'] = 'overdue' if today > due else 'borrowed'
+
+    stats = {
+        'total_borrowed':     len(txs),
+        'total_returned':     sum(1 for t in txs if t['status'] == 'returned'),
+        'currently_borrowed': sum(1 for t in txs if t['status'] in ('borrowed', 'overdue')),
+        'total_fines':        f"{sum((t['fine'] or 0) for t in txs):.2f}",
+    }
+
+    return render_template('transactions.html', transactions=txs, stats=stats)
 
 
 # --- AI CHAT ---
