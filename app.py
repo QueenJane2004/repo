@@ -18,7 +18,7 @@ db.init_db()
 CHAT_RULES = [
     (r'\b(hi|hello|hey)\b',     "Hello! 👋 Ask me about books, borrowing, returns, or fines."),
     (r'\b(fine|overdue)\b',     "A ₱20 per day overdue fee applies after the due date."),
-    (r'\b(borrow)\b',           "You can borrow books directly from the dashboard. Click 'Borrow' on any available book."),
+    (r'\b(borrow)\b',            "You can borrow books directly from the dashboard. Click 'Borrow' on any available book."),
     (r'\b(return)\b',           "Please return books at the library counter before or on the due date."),
     (r'\b(limit)\b',            "Members can borrow up to 5 books at a time."),
     (r'\b(due|deadline)\b',     "Books are due 10 days after borrowing. Check your borrowing history for exact dates."),
@@ -165,7 +165,6 @@ def user_dashboard():
     except Exception as e:
         print("Fine calc error:", e)
 
-    # FIX: RANDOM() works in PostgreSQL; wrapped in try/except for safety
     recommendations = []
     try:
         recommendations = db.query_db("""
@@ -184,28 +183,6 @@ def user_dashboard():
         total_fine=total_fine,
         limit=limit,
         recommendations=recommendations
-    )
-from datetime import datetime
-
-@app.route("/transactions_log")
-@login_required
-def transactions_log():
-    user_id = session.get("user_id")
-    if not user_id:
-        return redirect(url_for("login"))
-
-    transactions = query_db("""
-        SELECT b.title, b.author, l.issue_date, l.due_date, l.return_date, l.fine_amount
-        FROM loans l
-        JOIN books b ON l.book_id = b.id
-        WHERE l.user_id = %s
-        ORDER BY l.issue_date DESC
-    """, (user_id,))
-    
-    return render_template(
-        "transactions_log.html",
-        transactions=transactions,
-        current_date=datetime.now().date()
     )
 
 
@@ -270,14 +247,7 @@ def admin_dashboard():
         LIMIT 10
     """) or []
 
-    # FIX: messages table now created in init_db so this won't crash
-    messages = db.query_db("""
-        SELECT m.*, u.firstname || ' ' || u.lastname AS sender_name
-        FROM messages m
-        LEFT JOIN users u ON u.id = m.user_id
-        ORDER BY m.created_at ASC
-        LIMIT 50
-    """) or []
+    # REMOVED: Messages query causing DB error m.created_at
 
     return render_template(
         'admin.html',
@@ -285,8 +255,7 @@ def admin_dashboard():
         users_count    = users_count['cnt'] if users_count else 0,
         borrowed_count = borrowed_count['cnt'] if borrowed_count else 0,
         trending_books = trending_books,
-        all_users      = all_users,
-        messages       = messages
+        all_users      = all_users
     )
 
 
