@@ -90,7 +90,7 @@ def admin_dashboard():
 @login_required
 @admin_required
 def manage_books():
-    """Route for the 'Manage Books' sidebar link."""
+    """Renders manage_books.html"""
     books = db.query_db("SELECT * FROM books ORDER BY id DESC")
     return render_template('manage_books.html', books=books)
 
@@ -98,46 +98,31 @@ def manage_books():
 @login_required
 @admin_required
 def borrow_books():
-    """Route for the 'Borrow Books' sidebar link."""
+    """Renders borrow_books.html - used for active borrowing records"""
     tx = db.query_db("""
         SELECT l.*, b.title as book_title, u.username 
         FROM loans l JOIN books b ON b.id = l.book_id 
-        JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
+        JOIN users u ON u.id = l.user_id WHERE l.return_date IS NULL ORDER BY l.id DESC""")
     return render_template('borrow_books.html', transactions=tx)
-
-@app.route('/view_users')
-@login_required
-@admin_required
-def view_users():
-    """Route for the 'Users' sidebar link."""
-    users = db.query_db("SELECT * FROM users ORDER BY id DESC")
-    return render_template('view_users.html', all_users=users)
 
 @app.route('/activity_logs')
 @login_required
 @admin_required
 def activity_logs():
-    """Route for the 'Activity Logs' sidebar link."""
-    # Using loan records as a proxy for activity history
+    """Renders activity_logs.html - shows all history including returned books"""
     logs = db.query_db("""
         SELECT l.*, b.title as book_title, u.username 
         FROM loans l JOIN books b ON b.id = l.book_id 
         JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
     return render_template('activity_logs.html', logs=logs)
 
-@app.route('/transactions')
+@app.route('/view_users')
 @login_required
-def transactions_log():
-    """Route for general History sidebar links."""
-    if session['role'] == 'admin':
-        tx = db.query_db("""
-            SELECT l.*, b.title as book_title, u.username 
-            FROM loans l JOIN books b ON b.id = l.book_id 
-            JOIN users u ON u.id = l.user_id ORDER BY l.id DESC""")
-    else:
-        tx = db.query_db("SELECT l.*, b.title as book_title FROM loans l JOIN books b ON b.id = l.book_id WHERE l.user_id = ?", (session['user_id'],))
-    
-    return render_template('transactions_log.html', transactions=tx, is_admin=(session['role'] == 'admin'))
+@admin_required
+def view_users():
+    """Renders view_users.html"""
+    users = db.query_db("SELECT * FROM users ORDER BY id DESC")
+    return render_template('view_users.html', all_users=users)
 
 # --- ACTION ROUTES ---
 
