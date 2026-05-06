@@ -73,15 +73,15 @@
             <a href="{{ url_for('manage_books') }}" class="nav-link">
                 <i class="fas fa-book me-2"></i>Manage Books
             </a>
-            <!-- FIX: Linked to transactions_log instead of missing route -->
-            <a href="{{ url_for('transactions_log') }}" class="nav-link">
+            <!-- UPDATED: Pointed to borrow_books function -->
+            <a href="{{ url_for('borrow_books') }}" class="nav-link">
                 <i class="fas fa-hand-holding me-2"></i>Borrow Books
             </a>
             <a href="{{ url_for('view_users') }}" class="nav-link">
                 <i class="fas fa-users me-2"></i>Users
             </a>
-            <!-- FIX: Linked to transactions_log as a placeholder for Activity -->
-            <a href="{{ url_for('transactions_log') }}" class="nav-link">
+            <!-- UPDATED: Pointed to activity_logs function -->
+            <a href="{{ url_for('activity_logs') }}" class="nav-link">
                 <i class="fas fa-clipboard-list me-2"></i>Activity Logs
             </a>
         </nav>
