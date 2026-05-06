@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancelled / Overdue | Digital Library</title>
+    <title>Cancelled | Digital Library</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -37,7 +37,6 @@
         .section-card { background: white; border: none; border-radius: 18px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
         .table th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
         @media (max-width: 768px) { .sidebar { width: 100%; min-height: auto; position: relative; } .main-content { margin-left: 0; } }
-
     </style>
 </head>
 <body>
@@ -77,43 +76,45 @@
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h4 class="fw-bold mb-0"><i class="fas fa-times-circle me-2 text-danger"></i>Cancelled / Overdue</h4>
-                <p class="text-muted small mb-0">Loans that have exceeded their due date</p>
+                <h4 class="fw-bold mb-0"><i class="fas fa-times-circle me-2 text-danger"></i>Cancelled Books</h4>
+                <p class="text-muted small mb-0">Borrow requests that have been cancelled</p>
             </div>
-            {% if active_loans %}
-            <span class="badge bg-danger rounded-pill px-3 py-2">{{ active_loans|length }} overdue</span>
+            {% if cancelled_loans %}
+            <span class="badge bg-danger rounded-pill px-3 py-2">{{ cancelled_loans|length }} cancelled</span>
             {% endif %}
         </div>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}{% for cat, msg in messages %}
-            <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
-                {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}{% endif %}
-    {% endwith %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-3">
+                    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}{% endif %}
+        {% endwith %}
         <div class="section-card">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Days Overdue</th><th>Fine (₱)</th><th>Action</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Book</th>
+                            <th>Borrowed</th>
+                            <th>Due Date</th>
+                            <th>Cancelled On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        {% for loan in active_loans %}
+                        {% for loan in cancelled_loans %}
                         <tr>
                             <td class="fw-semibold small">{{ loan.username }}</td>
                             <td class="small">{{ loan.book_title }}</td>
                             <td class="text-muted small">{{ loan.issue_date }}</td>
-                            <td class="text-danger small">{{ loan.due_date }}</td>
-                            <td><span class="badge bg-danger rounded-pill">{{ loan.overdue_days }} days</span></td>
-                            <td class="fw-bold text-danger">₱{{ loan.current_fine }}</td>
-                            <td>
-                                <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST" class="d-inline">
-                                    <button class="btn btn-sm btn-danger rounded-pill px-3">
-                                        <i class="fas fa-undo me-1"></i>Return + Fine
-                                    </button>
-                                </form>
-                            </td>
+                            <td class="text-muted small">{{ loan.due_date }}</td>
+                            <td class="text-muted small">{{ loan.cancelled_date }}</td>
+                            <td><span class="badge bg-danger rounded-pill">Cancelled</span></td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="7" class="text-center text-muted small py-4">No overdue loans. 🎉</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted small py-4">No cancelled loans. 🎉</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
