@@ -493,7 +493,14 @@ def borrow_return():
 
     if is_admin:
         pending_loans, active_loans, cancelled_loans, returned_loans, total_fine, overdue_count, now = _get_loans_data()
+        return render_template('borrow_return.html',
+                               returned_loans=returned_loans,   # ← was missing
+                               active_loans=active_loans,
+                               total_fine=total_fine,
+                               overdue_count=overdue_count,
+                               now=now)
     else:
+        # ... rest of user branch unchanged
         active_loans = db.query_db("""
             SELECT l.*, b.title as book_title, b.author, b.image_url
             FROM loans l
