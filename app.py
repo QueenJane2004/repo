@@ -264,6 +264,8 @@ def cancel_book(loan_id):
     return redirect(url_for('borrow_cancel'))
 
 
+# --- RETURN BOOK ROUTE ---
+
 @app.route('/return_book/<int:loan_id>', methods=['POST'])
 @login_required
 def return_book(loan_id):
@@ -283,7 +285,8 @@ def return_book(loan_id):
 
     if not loan:
         flash("Loan not found or already returned.", "danger")
-        return redirect(url_for('borrow_return'))
+        # Redirect to the correct page depending on role
+        return redirect(url_for('borrow_return') if is_admin else url_for('transactions'))
 
     today       = datetime.today()
     return_date = today.strftime('%Y-%m-%d')
@@ -301,7 +304,11 @@ def return_book(loan_id):
     else:
         flash("Book returned successfully! Thank you.", "success")
 
-    return redirect(url_for('borrow_return'))
+    # ✅ FIX: users go back to their transactions page; admins go to borrow_return
+    if is_admin:
+        return redirect(url_for('borrow_return'))
+    else:
+        return redirect(url_for('transactions') + '?tab=returned')
 
 
 @app.route('/add_book', methods=['POST'])
@@ -600,6 +607,7 @@ def transactions():
 
     return render_template('transactions.html', transactions=txs, stats=stats)
 
+
 # --- AI CHAT ---
 
 @app.route('/ai_chat', methods=['POST'])
@@ -615,7 +623,7 @@ def ai_chat():
     elif any(w in user_message for w in ['borrow', 'checkout', 'limit']):
         reply = "You can borrow up to 5 books at a time. Books are due 7 days after borrowing."
     elif any(w in user_message for w in ['return', 'give back']):
-        reply = "You can return books from your 'My Borrowed Books' page. Return before the due date to avoid fines."
+        reply = "You can return books from your 'Borrow History' page. Return before the due date to avoid fines."
     elif any(w in user_message for w in ['available', 'stock', 'copies']):
         reply = "Book availability is shown on each book card. Green means available, red means out of stock."
     elif any(w in user_message for w in ['hello', 'hi', 'hey']):

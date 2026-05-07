@@ -734,16 +734,14 @@
     }
 
     /* ══ Return modal ══ */
-    const returnModal    = document.getElementById('returnModal');
-    const returnForm     = document.getElementById('returnForm');
-    const modalBookName  = document.getElementById('modalBookName');
-    const modalSubtext   = document.getElementById('modalSubtext');
+    const returnModal     = document.getElementById('returnModal');
+    const returnForm      = document.getElementById('returnForm');
+    const modalBookName   = document.getElementById('modalBookName');
+    const modalSubtext    = document.getElementById('modalSubtext');
     const modalConfirmBtn = document.getElementById('modalConfirmBtn');
 
     function openReturnModal(loanId, bookTitle, isOverdue) {
-        /* Point form action to /return_book/<loan_id> */
         returnForm.action = '/return_book/' + loanId;
-
         modalBookName.textContent = bookTitle;
 
         if (isOverdue) {
@@ -775,6 +773,12 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeReturnModal();
     });
+
+    /* ══ Auto-open Returned tab if redirected after a return ══ */
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'returned') {
+        switchTab('returned');
+    }
 </script>
 </body>
 </html>
