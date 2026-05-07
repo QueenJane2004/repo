@@ -30,12 +30,12 @@
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1rem;
         }
-        .form-control, .form-select {
+        .form-control {
             border-radius: 12px;
             padding: 0.75rem 1rem;
             border: 1.5px solid #e2e8f0;
         }
-        .form-control:focus, .form-select:focus {
+        .form-control:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
@@ -79,14 +79,7 @@
                                placeholder="Dela Cruz" required>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small">Role</label>
-                    <select name="role" class="form-select">
-                        <option value="Student">Student</option>
-                        <option value="Faculty">Faculty</option>
-                        <option value="Staff">Staff</option>
-                    </select>
-                </div>
+                <input type="hidden" name="role" value="Student">
                 <div class="mb-3">
                     <label class="form-label fw-semibold small">Username</label>
                     <input type="text" name="username" class="form-control"
