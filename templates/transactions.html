@@ -11,7 +11,6 @@
             --library-blue: #2563eb;
             --gradient-main: linear-gradient(135deg, #2e1065 0%, #3b82f6 100%);
             --col-pending:   #f59e0b;
-            --col-approved:  #2563eb;
             --col-borrowed:  #16a34a;
             --col-overdue:   #dc2626;
             --col-returned:  #0ea5e9;
@@ -50,15 +49,16 @@
         }
         .stat-card:hover { transform: translateY(-4px); }
         .stat-card.s-total    { border-top-color: var(--library-blue); }
-        .stat-card.s-active   { border-top-color: var(--col-borrowed);  }
-        .stat-card.s-returned { border-top-color: var(--col-returned);  }
-        .stat-card.s-fines    { border-top-color: var(--col-overdue);   }
+        .stat-card.s-active   { border-top-color: var(--col-borrowed); }
+        .stat-card.s-returned { border-top-color: var(--col-returned); }
+        .stat-card.s-fines    { border-top-color: var(--col-overdue);  }
 
         .stat-count { font-size: 1.9rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
         .stat-card.s-total    .stat-count { color: var(--library-blue); }
-        .stat-card.s-active   .stat-count { color: var(--col-borrowed);  }
-        .stat-card.s-returned .stat-count { color: var(--col-returned);  }
-        .stat-card.s-fines    .stat-count { color: var(--col-overdue);   }
+        .stat-card.s-active   .stat-count { color: var(--col-borrowed); }
+        .stat-card.s-returned .stat-count { color: var(--col-returned); }
+        .stat-card.s-fines    .stat-count { color: var(--col-overdue);  }
+
         .stat-label {
             font-size: .69rem; color: #64748b;
             font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
@@ -94,17 +94,17 @@
             font-size: .67rem; font-weight: 800;
             background: #e2e8f0; color: #64748b; padding: 0 5px;
         }
-        .tab-btn.ta-all      { background:#eff6ff; color:#1e3a8a; }
-        .tab-btn.ta-all      .cnt { background: var(--library-blue); color:#fff; }
-        .tab-btn.ta-pending  { background:#fffbeb; color:#92400e; }
-        .tab-btn.ta-pending  .cnt { background: var(--col-pending);   color:#fff; }
-        .tab-btn.ta-borrowed { background:#f0fdf4; color:#14532d; }
-        .tab-btn.ta-borrowed .cnt { background: var(--col-borrowed);  color:#fff; }
-        .tab-btn.ta-overdue  { background:#fef2f2; color:#7f1d1d; }
-        .tab-btn.ta-overdue  .cnt { background: var(--col-overdue);   color:#fff; }
-        .tab-btn.ta-returned { background:#e0f2fe; color:#0c4a6e; }
-        .tab-btn.ta-returned .cnt { background: var(--col-returned);  color:#fff; }
-        .tab-btn.ta-cancelled{ background:#f8fafc; color:#374151; }
+        .tab-btn.ta-all       { background:#eff6ff; color:#1e3a8a; }
+        .tab-btn.ta-all       .cnt { background: var(--library-blue); color:#fff; }
+        .tab-btn.ta-pending   { background:#fffbeb; color:#92400e; }
+        .tab-btn.ta-pending   .cnt { background: var(--col-pending);   color:#fff; }
+        .tab-btn.ta-borrowed  { background:#f0fdf4; color:#14532d; }
+        .tab-btn.ta-borrowed  .cnt { background: var(--col-borrowed);  color:#fff; }
+        .tab-btn.ta-overdue   { background:#fef2f2; color:#7f1d1d; }
+        .tab-btn.ta-overdue   .cnt { background: var(--col-overdue);   color:#fff; }
+        .tab-btn.ta-returned  { background:#e0f2fe; color:#0c4a6e; }
+        .tab-btn.ta-returned  .cnt { background: var(--col-returned);  color:#fff; }
+        .tab-btn.ta-cancelled { background:#f8fafc; color:#374151; }
         .tab-btn.ta-cancelled .cnt { background: var(--col-cancelled); color:#fff; }
 
         /* ── Transaction row cards ── */
@@ -112,7 +112,6 @@
             background: white; border-radius: 16px;
             box-shadow: 0 2px 10px rgba(0,0,0,.06);
             margin-bottom: 12px; overflow: hidden;
-            display: flex; align-items: stretch;
             border-left: 6px solid #e2e8f0;
             transition: transform .18s, box-shadow .18s;
         }
@@ -122,6 +121,11 @@
         .tx-card[data-status="overdue"]   { border-left-color: var(--col-overdue);   }
         .tx-card[data-status="returned"]  { border-left-color: var(--col-returned);  }
         .tx-card[data-status="cancelled"] { border-left-color: var(--col-cancelled); }
+
+        /* ── Card inner layout ── */
+        .tx-inner {
+            display: flex; align-items: stretch;
+        }
 
         .book-cover {
             width: 76px; min-width: 76px; object-fit: cover;
@@ -141,19 +145,20 @@
         }
         .tx-author { font-size: .75rem; color: #64748b; margin-bottom: 8px; }
 
+        /* Pills */
         .pill {
             font-size: .67rem; font-weight: 600; padding: 3px 10px;
             border-radius: 50px; display: inline-flex; align-items: center; gap: 4px;
             white-space: nowrap;
         }
-        .p-date      { background:#f1f5f9; color:#475569; }
-        .p-barcode   { background:#f1f5f9; color:#64748b; font-family:monospace; }
-        .p-due       { background:#fef9c3; color:#713f12; }
-        .p-overdue   { background:#fee2e2; color:#7f1d1d; }
-        .p-fine      { background:#fee2e2; color:#7f1d1d; }
-        .p-fine-paid { background:#dcfce7; color:#14532d; }
-        .p-returned  { background:#dcfce7; color:#14532d; }
+        .p-date     { background:#f1f5f9; color:#475569; }
+        .p-barcode  { background:#f1f5f9; color:#64748b; font-family:monospace; }
+        .p-due      { background:#fef9c3; color:#713f12; }
+        .p-overdue  { background:#fee2e2; color:#7f1d1d; }
+        .p-fine     { background:#fee2e2; color:#7f1d1d; }
+        .p-returned { background:#dcfce7; color:#14532d; }
 
+        /* Right-side status badge */
         .status-right {
             font-size: .68rem; font-weight: 800;
             padding: 5px 12px; border-radius: 50px;
@@ -167,6 +172,73 @@
         .sr-returned  { background:#e0f2fe; color:#0c4a6e; border-color:#7dd3fc; }
         .sr-cancelled { background:#f8fafc; color:#374151; border-color:#d1d5db; }
 
+        /* ── Return action bar (bottom strip of borrowed/overdue cards) ── */
+        .return-bar {
+            border-top: 1px solid #f1f5f9;
+            padding: 10px 16px;
+            display: flex; align-items: center;
+            justify-content: space-between;
+            background: #fafcff;
+        }
+        .return-bar .return-hint {
+            font-size: .72rem; color: #94a3b8;
+        }
+        .btn-return {
+            background: #16a34a; color: white;
+            border: none; border-radius: 50px;
+            padding: 7px 20px; font-size: .78rem;
+            font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: background .2s, transform .15s;
+        }
+        .btn-return:hover  { background: #15803d; transform: scale(1.03); }
+        .btn-return:active { transform: scale(.97); }
+
+        /* Overdue return bar slightly tinted red */
+        .return-bar.overdue-bar {
+            background: #fff8f8;
+            border-top-color: #fee2e2;
+        }
+        .return-bar.overdue-bar .return-hint { color: #f87171; }
+        .btn-return-overdue {
+            background: #dc2626;
+        }
+        .btn-return-overdue:hover { background: #b91c1c; }
+
+        /* ── Confirm modal overlay ── */
+        .modal-backdrop-custom {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 1055;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-backdrop-custom.show { display: flex; }
+        .modal-box {
+            background: white; border-radius: 20px;
+            padding: 28px 28px 22px; max-width: 400px; width: 92%;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2);
+            animation: popIn .2s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(.92); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        .modal-box h5 { font-weight: 800; font-size: 1.05rem; margin-bottom: 6px; }
+        .modal-box p  { font-size: .85rem; color: #64748b; margin-bottom: 20px; }
+        .modal-book-name {
+            font-weight: 700; color: #1e293b;
+            background: #f1f5f9; border-radius: 10px;
+            padding: 10px 14px; font-size: .88rem;
+            margin-bottom: 18px;
+        }
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions button { flex: 1; border-radius: 50px; padding: 9px; font-weight: 700; font-size: .83rem; border: none; cursor: pointer; transition: all .15s; }
+        .btn-confirm-return { background: #16a34a; color: white; }
+        .btn-confirm-return:hover { background: #15803d; }
+        .btn-cancel-modal   { background: #f1f5f9; color: #475569; }
+        .btn-cancel-modal:hover { background: #e2e8f0; }
+
+        /* ── Section dividers ── */
         .sec-div {
             font-size: .71rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: .07em;
@@ -175,6 +247,7 @@
         }
         .sec-div::after { content:''; flex:1; height:1px; background:#e2e8f0; }
 
+        /* ── Empty state ── */
         .empty-state { text-align:center; padding:60px 20px; color:#94a3b8; }
         .empty-state i { font-size:3rem; margin-bottom:14px; display:block; }
         .empty-state p { font-size:.9rem; }
@@ -182,6 +255,7 @@
         @media(max-width:576px){
             .tab-btn { font-size:.68rem; padding:7px 4px; }
             .stat-count { font-size:1.5rem; }
+            .status-right { display: none; }
         }
     </style>
 </head>
@@ -222,7 +296,7 @@
         {% endfor %}{% endif %}
     {% endwith %}
 
-    <!-- ── Stat cards — driven by stats dict passed from /transactions route ── -->
+    <!-- Stat cards -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="stat-card s-total">
@@ -265,7 +339,7 @@
         </div>
     </div>
 
-    <!-- Compute counts for tab badges -->
+    <!-- Tab badge counts -->
     {% set cnt_pending   = transactions | selectattr('status','equalto','pending')   | list | length %}
     {% set cnt_borrowed  = transactions | selectattr('status','equalto','borrowed')  | list | length %}
     {% set cnt_overdue   = transactions | selectattr('status','equalto','overdue')   | list | length %}
@@ -301,7 +375,7 @@
         </button>
     </div>
 
-    <!-- ══════════ Transaction list ══════════ -->
+    <!-- ══ Transaction list ══ -->
     <div id="txList">
 
         {# ── PENDING ── #}
@@ -315,38 +389,40 @@
         {% for tx in transactions if tx['status'] == 'pending' %}
         <div class="tx-card" data-status="pending"
              data-search="{{ tx['title']|lower }} {{ tx['author']|lower }} {{ tx['barcode']|lower }}">
-            {% if tx['image_url'] %}
-                <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
-                     onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
-            {% else %}
-                <div class="book-cover-ph">📖</div>
-            {% endif %}
-            <div class="tx-body">
-                <div class="tx-title">{{ tx['title'] }}</div>
-                <div class="tx-author">by {{ tx['author'] }}</div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="pill p-date">
-                        <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
-                        Requested: {{ tx['borrow_date'] }}
-                    </span>
-                    <span class="pill p-due">
-                        <i class="fas fa-calendar-times" style="font-size:.6rem;"></i>
-                        Due: {{ tx['due_date'] }}
-                    </span>
-                    <span class="pill p-barcode">
-                        <i class="fas fa-barcode" style="font-size:.6rem;"></i>
-                        {{ tx['barcode'] }}
-                    </span>
+            <div class="tx-inner">
+                {% if tx['image_url'] %}
+                    <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
+                         onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
+                {% else %}
+                    <div class="book-cover-ph">📖</div>
+                {% endif %}
+                <div class="tx-body">
+                    <div class="tx-title">{{ tx['title'] }}</div>
+                    <div class="tx-author">by {{ tx['author'] }}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="pill p-date">
+                            <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
+                            Requested: {{ tx['borrow_date'] }}
+                        </span>
+                        <span class="pill p-due">
+                            <i class="fas fa-calendar-times" style="font-size:.6rem;"></i>
+                            Due: {{ tx['due_date'] }}
+                        </span>
+                        <span class="pill p-barcode">
+                            <i class="fas fa-barcode" style="font-size:.6rem;"></i>
+                            {{ tx['barcode'] }}
+                        </span>
+                    </div>
                 </div>
+                <span class="status-right sr-pending">
+                    <i class="fas fa-clock me-1"></i>Pending
+                </span>
             </div>
-            <span class="status-right sr-pending">
-                <i class="fas fa-clock me-1"></i>Pending
-            </span>
         </div>
         {% endfor %}
 
 
-        {# ── BORROWED (approved, not overdue) ── #}
+        {# ── BORROWED ── #}
         {% if cnt_borrowed > 0 %}
         <div class="sec-div tx-header" data-group="borrowed">
             <i class="fas fa-book-open" style="color:var(--col-borrowed);"></i>
@@ -357,33 +433,46 @@
         {% for tx in transactions if tx['status'] == 'borrowed' %}
         <div class="tx-card" data-status="borrowed"
              data-search="{{ tx['title']|lower }} {{ tx['author']|lower }} {{ tx['barcode']|lower }}">
-            {% if tx['image_url'] %}
-                <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
-                     onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
-            {% else %}
-                <div class="book-cover-ph">📖</div>
-            {% endif %}
-            <div class="tx-body">
-                <div class="tx-title">{{ tx['title'] }}</div>
-                <div class="tx-author">by {{ tx['author'] }}</div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="pill p-date">
-                        <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
-                        Borrowed: {{ tx['borrow_date'] }}
-                    </span>
-                    <span class="pill p-due">
-                        <i class="fas fa-calendar-times" style="font-size:.6rem;"></i>
-                        Due: {{ tx['due_date'] }}
-                    </span>
-                    <span class="pill p-barcode">
-                        <i class="fas fa-barcode" style="font-size:.6rem;"></i>
-                        {{ tx['barcode'] }}
-                    </span>
+            <div class="tx-inner">
+                {% if tx['image_url'] %}
+                    <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
+                         onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
+                {% else %}
+                    <div class="book-cover-ph">📖</div>
+                {% endif %}
+                <div class="tx-body">
+                    <div class="tx-title">{{ tx['title'] }}</div>
+                    <div class="tx-author">by {{ tx['author'] }}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="pill p-date">
+                            <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
+                            Borrowed: {{ tx['borrow_date'] }}
+                        </span>
+                        <span class="pill p-due">
+                            <i class="fas fa-calendar-times" style="font-size:.6rem;"></i>
+                            Due: {{ tx['due_date'] }}
+                        </span>
+                        <span class="pill p-barcode">
+                            <i class="fas fa-barcode" style="font-size:.6rem;"></i>
+                            {{ tx['barcode'] }}
+                        </span>
+                    </div>
                 </div>
+                <span class="status-right sr-borrowed">
+                    <i class="fas fa-book-open me-1"></i>Borrowed
+                </span>
             </div>
-            <span class="status-right sr-borrowed">
-                <i class="fas fa-book-open me-1"></i>Borrowed
-            </span>
+            <!-- Return action bar -->
+            <div class="return-bar">
+                <span class="return-hint">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Done reading? Return this book to the library.
+                </span>
+                <button class="btn-return"
+                        onclick="openReturnModal({{ tx['id'] }}, '{{ tx['title']|replace("'", "\\'") }}', false)">
+                    <i class="fas fa-undo-alt"></i> Return Book
+                </button>
+            </div>
         </div>
         {% endfor %}
 
@@ -399,40 +488,52 @@
         {% for tx in transactions if tx['status'] == 'overdue' %}
         <div class="tx-card" data-status="overdue"
              data-search="{{ tx['title']|lower }} {{ tx['author']|lower }} {{ tx['barcode']|lower }}">
-            {% if tx['image_url'] %}
-                <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
-                     onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
-            {% else %}
-                <div class="book-cover-ph">📖</div>
-            {% endif %}
-            <div class="tx-body">
-                <div class="tx-title">{{ tx['title'] }}</div>
-                <div class="tx-author">by {{ tx['author'] }}</div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="pill p-date">
-                        <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
-                        Borrowed: {{ tx['borrow_date'] }}
-                    </span>
-                    <span class="pill p-overdue">
-                        <i class="fas fa-exclamation-triangle" style="font-size:.6rem;"></i>
-                        Was due: {{ tx['due_date'] }}
-                    </span>
-                    <span class="pill p-barcode">
-                        <i class="fas fa-barcode" style="font-size:.6rem;"></i>
-                        {{ tx['barcode'] }}
-                    </span>
-                    {% if tx['fine'] and tx['fine'] > 0 %}
-                    <span class="pill p-fine">
-                        <i class="fas fa-hand-holding-dollar" style="font-size:.6rem;"></i>
-                        Fine: &#8369;{{ '%.2f'|format(tx['fine']) }}
-                        {% if tx['fine_paid'] %}<em>(paid)</em>{% endif %}
-                    </span>
-                    {% endif %}
+            <div class="tx-inner">
+                {% if tx['image_url'] %}
+                    <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
+                         onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
+                {% else %}
+                    <div class="book-cover-ph">📖</div>
+                {% endif %}
+                <div class="tx-body">
+                    <div class="tx-title">{{ tx['title'] }}</div>
+                    <div class="tx-author">by {{ tx['author'] }}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="pill p-date">
+                            <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
+                            Borrowed: {{ tx['borrow_date'] }}
+                        </span>
+                        <span class="pill p-overdue">
+                            <i class="fas fa-exclamation-triangle" style="font-size:.6rem;"></i>
+                            Was due: {{ tx['due_date'] }}
+                        </span>
+                        <span class="pill p-barcode">
+                            <i class="fas fa-barcode" style="font-size:.6rem;"></i>
+                            {{ tx['barcode'] }}
+                        </span>
+                        {% if tx['fine'] and tx['fine'] > 0 %}
+                        <span class="pill p-fine">
+                            <i class="fas fa-hand-holding-dollar" style="font-size:.6rem;"></i>
+                            Fine: &#8369;{{ '%.2f'|format(tx['fine']) }}
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
+                <span class="status-right sr-overdue">
+                    <i class="fas fa-exclamation-circle me-1"></i>Overdue
+                </span>
             </div>
-            <span class="status-right sr-overdue">
-                <i class="fas fa-exclamation-circle me-1"></i>Overdue
-            </span>
+            <!-- Return action bar for overdue -->
+            <div class="return-bar overdue-bar">
+                <span class="return-hint">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Overdue! A fine will be calculated on return.
+                </span>
+                <button class="btn-return btn-return-overdue"
+                        onclick="openReturnModal({{ tx['id'] }}, '{{ tx['title']|replace("'", "\\'") }}', true)">
+                    <i class="fas fa-undo-alt"></i> Return Now
+                </button>
+            </div>
         </div>
         {% endfor %}
 
@@ -448,42 +549,43 @@
         {% for tx in transactions if tx['status'] == 'returned' %}
         <div class="tx-card" data-status="returned"
              data-search="{{ tx['title']|lower }} {{ tx['author']|lower }} {{ tx['barcode']|lower }}">
-            {% if tx['image_url'] %}
-                <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
-                     onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
-            {% else %}
-                <div class="book-cover-ph">📖</div>
-            {% endif %}
-            <div class="tx-body">
-                <div class="tx-title">{{ tx['title'] }}</div>
-                <div class="tx-author">by {{ tx['author'] }}</div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="pill p-date">
-                        <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
-                        Borrowed: {{ tx['borrow_date'] }}
-                    </span>
-                    {% if tx['return_date'] %}
-                    <span class="pill p-returned">
-                        <i class="fas fa-undo" style="font-size:.6rem;"></i>
-                        Returned: {{ tx['return_date'] }}
-                    </span>
-                    {% endif %}
-                    <span class="pill p-barcode">
-                        <i class="fas fa-barcode" style="font-size:.6rem;"></i>
-                        {{ tx['barcode'] }}
-                    </span>
-                    {% if tx['fine'] and tx['fine'] > 0 %}
-                    <span class="pill {{ 'p-fine-paid' if tx['fine_paid'] else 'p-fine' }}">
-                        <i class="fas fa-hand-holding-dollar" style="font-size:.6rem;"></i>
-                        Fine: &#8369;{{ '%.2f'|format(tx['fine']) }}
-                        {% if tx['fine_paid'] %} &#10003; Paid{% else %} (unpaid){% endif %}
-                    </span>
-                    {% endif %}
+            <div class="tx-inner">
+                {% if tx['image_url'] %}
+                    <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
+                         onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
+                {% else %}
+                    <div class="book-cover-ph">📖</div>
+                {% endif %}
+                <div class="tx-body">
+                    <div class="tx-title">{{ tx['title'] }}</div>
+                    <div class="tx-author">by {{ tx['author'] }}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="pill p-date">
+                            <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
+                            Borrowed: {{ tx['borrow_date'] }}
+                        </span>
+                        {% if tx['return_date'] %}
+                        <span class="pill p-returned">
+                            <i class="fas fa-undo" style="font-size:.6rem;"></i>
+                            Returned: {{ tx['return_date'] }}
+                        </span>
+                        {% endif %}
+                        <span class="pill p-barcode">
+                            <i class="fas fa-barcode" style="font-size:.6rem;"></i>
+                            {{ tx['barcode'] }}
+                        </span>
+                        {% if tx['fine'] and tx['fine'] > 0 %}
+                        <span class="pill p-fine">
+                            <i class="fas fa-hand-holding-dollar" style="font-size:.6rem;"></i>
+                            Fine: &#8369;{{ '%.2f'|format(tx['fine']) }}
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
+                <span class="status-right sr-returned">
+                    <i class="fas fa-undo me-1"></i>Returned
+                </span>
             </div>
-            <span class="status-right sr-returned">
-                <i class="fas fa-undo me-1"></i>Returned
-            </span>
         </div>
         {% endfor %}
 
@@ -499,40 +601,41 @@
         {% for tx in transactions if tx['status'] == 'cancelled' %}
         <div class="tx-card" data-status="cancelled"
              data-search="{{ tx['title']|lower }} {{ tx['author']|lower }} {{ tx['barcode']|lower }}">
-            {% if tx['image_url'] %}
-                <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
-                     onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
-            {% else %}
-                <div class="book-cover-ph">📖</div>
-            {% endif %}
-            <div class="tx-body">
-                <div class="tx-title">{{ tx['title'] }}</div>
-                <div class="tx-author">by {{ tx['author'] }}</div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="pill p-date">
-                        <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
-                        Requested: {{ tx['borrow_date'] }}
-                    </span>
-                    {% if tx['return_date'] %}
-                    <span class="pill p-date">
-                        <i class="fas fa-calendar-xmark" style="font-size:.6rem;"></i>
-                        Cancelled on: {{ tx['return_date'] }}
-                    </span>
-                    {% endif %}
-                    <span class="pill p-barcode">
-                        <i class="fas fa-barcode" style="font-size:.6rem;"></i>
-                        {{ tx['barcode'] }}
-                    </span>
+            <div class="tx-inner">
+                {% if tx['image_url'] %}
+                    <img src="{{ tx['image_url'] }}" class="book-cover" alt="{{ tx['title'] }}"
+                         onerror="this.outerHTML='<div class=book-cover-ph>&#128218;</div>'">
+                {% else %}
+                    <div class="book-cover-ph">📖</div>
+                {% endif %}
+                <div class="tx-body">
+                    <div class="tx-title">{{ tx['title'] }}</div>
+                    <div class="tx-author">by {{ tx['author'] }}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="pill p-date">
+                            <i class="fas fa-calendar-plus" style="font-size:.6rem;"></i>
+                            Requested: {{ tx['borrow_date'] }}
+                        </span>
+                        {% if tx['return_date'] %}
+                        <span class="pill p-date">
+                            <i class="fas fa-calendar-xmark" style="font-size:.6rem;"></i>
+                            Cancelled on: {{ tx['return_date'] }}
+                        </span>
+                        {% endif %}
+                        <span class="pill p-barcode">
+                            <i class="fas fa-barcode" style="font-size:.6rem;"></i>
+                            {{ tx['barcode'] }}
+                        </span>
+                    </div>
                 </div>
+                <span class="status-right sr-cancelled">
+                    <i class="fas fa-ban me-1"></i>Cancelled
+                </span>
             </div>
-            <span class="status-right sr-cancelled">
-                <i class="fas fa-ban me-1"></i>Cancelled
-            </span>
         </div>
         {% endfor %}
 
 
-        {# No records at all #}
         {% if not transactions %}
         <div class="empty-state">
             <i class="fas fa-box-open"></i>
@@ -541,7 +644,6 @@
         </div>
         {% endif %}
 
-        <!-- JS empty state when filter yields nothing -->
         <div id="noResults" class="empty-state d-none">
             <i class="fas fa-search-minus"></i>
             <h5 class="fw-bold">No records match.</h5>
@@ -553,8 +655,29 @@
     <div class="pb-5"></div>
 </div><!-- .container -->
 
+<!-- ══ Return Confirmation Modal ══ -->
+<div class="modal-backdrop-custom" id="returnModal">
+    <div class="modal-box">
+        <h5><i class="fas fa-undo-alt me-2 text-success"></i>Return this book?</h5>
+        <p id="modalSubtext">Please confirm you are returning this book to the library counter.</p>
+        <div class="modal-book-name" id="modalBookName"></div>
+        <div class="modal-actions">
+            <button class="btn-cancel-modal" onclick="closeReturnModal()">
+                <i class="fas fa-times me-1"></i>Cancel
+            </button>
+            <!-- Hidden form — action is set dynamically by JS -->
+            <form id="returnForm" method="POST" style="flex:1;">
+                <button type="submit" class="btn-confirm-return w-100" id="modalConfirmBtn">
+                    <i class="fas fa-undo-alt me-1"></i>Yes, Return It
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    /* ══ Tab filter ══ */
     let activeTab   = 'all';
     let searchQuery = '';
 
@@ -585,7 +708,6 @@
 
     function applyFilters() {
         let visible = 0;
-
         cards.forEach(card => {
             const status     = card.getAttribute('data-status');
             const searchable = card.getAttribute('data-search');
@@ -596,12 +718,10 @@
             if (show) visible++;
         });
 
-        /* Hide/show section headers based on whether their group has visible cards */
         headers.forEach(hdr => {
             const grp = hdr.getAttribute('data-group');
             if (activeTab !== 'all' && activeTab !== grp) {
-                hdr.classList.add('d-none');
-                return;
+                hdr.classList.add('d-none'); return;
             }
             const anyVisible = [...cards].some(c =>
                 c.getAttribute('data-status') === grp && !c.classList.contains('d-none')
@@ -612,6 +732,49 @@
         const isEmpty = visible === 0 && (searchQuery || activeTab !== 'all');
         noResults.classList.toggle('d-none', !isEmpty);
     }
+
+    /* ══ Return modal ══ */
+    const returnModal    = document.getElementById('returnModal');
+    const returnForm     = document.getElementById('returnForm');
+    const modalBookName  = document.getElementById('modalBookName');
+    const modalSubtext   = document.getElementById('modalSubtext');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+
+    function openReturnModal(loanId, bookTitle, isOverdue) {
+        /* Point form action to /return_book/<loan_id> */
+        returnForm.action = '/return_book/' + loanId;
+
+        modalBookName.textContent = bookTitle;
+
+        if (isOverdue) {
+            modalSubtext.innerHTML =
+                '<span style="color:#dc2626;font-weight:600;">' +
+                '<i class="fas fa-exclamation-triangle me-1"></i>This book is overdue!</span> ' +
+                'A fine of <strong>&#8369;5 per overdue day</strong> will be recorded. Please settle at the counter.';
+            modalConfirmBtn.style.background = '#dc2626';
+            modalConfirmBtn.innerHTML = '<i class="fas fa-undo-alt me-1"></i>Yes, Return Anyway';
+        } else {
+            modalSubtext.textContent = 'Please confirm you are returning this book to the library counter.';
+            modalConfirmBtn.style.background = '#16a34a';
+            modalConfirmBtn.innerHTML = '<i class="fas fa-undo-alt me-1"></i>Yes, Return It';
+        }
+
+        returnModal.classList.add('show');
+    }
+
+    function closeReturnModal() {
+        returnModal.classList.remove('show');
+    }
+
+    /* Close modal on backdrop click */
+    returnModal.addEventListener('click', function(e) {
+        if (e.target === returnModal) closeReturnModal();
+    });
+
+    /* Close modal on Escape key */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeReturnModal();
+    });
 </script>
 </body>
 </html>
