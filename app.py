@@ -569,15 +569,15 @@ def user_dashboard():
 
 
 # --- USER TRANSACTION HISTORY ---
-
 @app.route('/transactions')
 @login_required
 def transactions():
     user_id = session['user_id']
 
     txs = db.query_db("""
-        SELECT l.*, b.title, b.author, b.image_url, b.barcode,
-               l.issue_date as borrow_date, l.fine_amount as fine, l.fine_paid
+        SELECT l.id, l.status, l.issue_date as borrow_date, l.due_date,
+               l.return_date, l.fine_amount as fine,
+               b.title, b.author, b.image_url, b.barcode
         FROM loans l
         JOIN books b ON b.id = l.book_id
         WHERE l.user_id = ?
@@ -586,6 +586,7 @@ def transactions():
 
     today = datetime.today()
     for tx in txs:
+        # Only reclassify approved loans into borrowed/overdue
         if tx['return_date'] is None and tx['status'] == 'approved':
             due = datetime.strptime(tx['due_date'], '%Y-%m-%d')
             tx['status'] = 'overdue' if today > due else 'borrowed'
@@ -593,12 +594,11 @@ def transactions():
     stats = {
         'total_borrowed':     len(txs),
         'total_returned':     sum(1 for t in txs if t['status'] == 'returned'),
-        'currently_borrowed': sum(1 for t in txs if t['status'] in ('borrowed', 'overdue')),
+        'currently_borrowed': sum(1 for t in txs if t['status'] in ('borrowed', 'overdue', 'pending')),
         'total_fines':        f"{sum((t['fine'] or 0) for t in txs):.2f}",
     }
 
     return render_template('transactions.html', transactions=txs, stats=stats)
-
 
 # --- AI CHAT ---
 
