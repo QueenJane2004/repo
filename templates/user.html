@@ -36,6 +36,19 @@
             padding: 25px; margin-bottom: 35px;
             border: 1px solid #e2e8f0;
         }
+        .rec-card {
+            border-radius: 12px; overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
+            cursor: default;
+        }
+        .rec-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,.1); }
+        .rec-score-badge {
+            position: absolute; top: 6px; right: 6px;
+            background: rgba(37,99,235,.85); color: #fff;
+            font-size: .6rem; font-weight: 700;
+            border-radius: 50px; padding: 2px 8px;
+            backdrop-filter: blur(4px);
+        }
         mark { background: #fef08a; color: #000; padding: 0; border-radius: 2px; }
 
         /* Quantity input styling */
@@ -155,17 +168,44 @@
         <!-- Recommendations -->
         {% if recommendations %}
         <div id="recommendationPanel" class="recommendation-section shadow-sm mb-4">
-            <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-star me-2"></i>Picked For You</h5>
-            <div class="row flex-nowrap overflow-auto pb-2">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold mb-0 text-primary">
+                    <i class="fas fa-brain me-2"></i>Recommended For You
+                </h5>
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3" style="font-size:.7rem;">
+                    Based on your reading history
+                </span>
+            </div>
+            {% if rec_reason %}
+            <p class="text-muted small mb-3" style="font-size:.78rem;">
+                <i class="fas fa-info-circle me-1"></i>{{ rec_reason }}
+            </p>
+            {% endif %}
+            <div class="row g-3">
                 {% for rec in recommendations %}
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 bg-light p-2 h-100 shadow-sm" style="border-radius:12px;">
+                    <div class="card border-0 bg-light h-100 shadow-sm rec-card position-relative">
                         <img src="{{ rec.image_url or '/static/uploads/books/default_cover.png' }}"
-                             class="card-img-top rounded mb-2"
+                             class="card-img-top"
                              style="height:140px;object-fit:cover;"
                              onerror="this.src='/static/uploads/books/default_cover.png'">
-                        <h6 class="small fw-bold mb-0 text-truncate">{{ rec.title }}</h6>
-                        <p class="text-muted small mb-0">{{ rec.author }}</p>
+                        {% if rec.score is defined and rec.score > 0 %}
+                        <span class="rec-score-badge">
+                            <i class="fas fa-fire me-1"></i>{{ rec.score }} match
+                        </span>
+                        {% endif %}
+                        <div class="card-body p-2">
+                            <h6 class="small fw-bold mb-0 text-truncate">{{ rec.title }}</h6>
+                            <p class="text-muted small mb-1" style="font-size:.72rem;">{{ rec.author }}</p>
+                            {% if rec.matched_keywords is defined and rec.matched_keywords %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for kw in rec.matched_keywords[:3] %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill"
+                                      style="font-size:.6rem;">{{ kw }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -222,7 +262,6 @@
 
                         {% if book.quantity > 0 and limit > 0 %}
                         <form action="{{ url_for('checkout', book_id=book.id) }}" method="POST">
-                            <!-- Quantity Selector -->
                             <div class="qty-controls">
                                 <button type="button" class="qty-btn" onclick="changeQty(this, -1, {{ book.quantity }})">−</button>
                                 <input type="number" name="borrow_qty"
@@ -305,7 +344,7 @@
             bookItems.forEach(item => {
                 const data  = item.getAttribute('data-searchable');
                 const texts = item.querySelectorAll('.searchable-text');
-                const match = data.includes(query);
+                const match = !query || data.includes(query);
 
                 item.classList.toggle('d-none', !match);
                 if (match) {

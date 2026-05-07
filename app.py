@@ -285,7 +285,6 @@ def return_book(loan_id):
 
     if not loan:
         flash("Loan not found or already returned.", "danger")
-        # Redirect to the correct page depending on role
         return redirect(url_for('borrow_return') if is_admin else url_for('transactions'))
 
     today       = datetime.today()
@@ -304,7 +303,6 @@ def return_book(loan_id):
     else:
         flash("Book returned successfully! Thank you.", "success")
 
-    # ✅ FIX: users go back to their transactions page; admins go to borrow_return
     if is_admin:
         return redirect(url_for('borrow_return'))
     else:
@@ -499,36 +497,37 @@ def borrow_return():
                                total_fine=total_fine,
                                overdue_count=overdue_count,
                                now=now)
-    else:
-        active_loans = db.query_db("""
-            SELECT l.*, b.title as book_title, b.author, b.image_url
-            FROM loans l
-            JOIN books b ON b.id = l.book_id
-            WHERE l.user_id = ? AND l.return_date IS NULL AND l.status = 'approved'
-            ORDER BY l.due_date ASC
-        """, [user_id]) or []
 
-        returned_loans = db.query_db("""
-            SELECT l.*, b.title as book_title, b.author, b.image_url
-            FROM loans l
-            JOIN books b ON b.id = l.book_id
-            WHERE l.user_id = ? AND l.status = 'returned'
-            ORDER BY l.return_date DESC
-        """, [user_id]) or []
+    # Non-admin path
+    active_loans = db.query_db("""
+        SELECT l.*, b.title as book_title, b.author, b.image_url
+        FROM loans l
+        JOIN books b ON b.id = l.book_id
+        WHERE l.user_id = ? AND l.return_date IS NULL AND l.status = 'approved'
+        ORDER BY l.due_date ASC
+    """, [user_id]) or []
 
-        total_fine    = 0
-        overdue_count = 0
+    returned_loans = db.query_db("""
+        SELECT l.*, b.title as book_title, b.author, b.image_url
+        FROM loans l
+        JOIN books b ON b.id = l.book_id
+        WHERE l.user_id = ? AND l.status = 'returned'
+        ORDER BY l.return_date DESC
+    """, [user_id]) or []
 
-        for loan in active_loans:
-            due = datetime.strptime(loan['due_date'], '%Y-%m-%d')
-            if today > due:
-                loan['overdue_days'] = (today - due).days
-                loan['current_fine'] = loan['overdue_days'] * 5
-                total_fine          += loan['current_fine']
-                overdue_count       += 1
-            else:
-                loan['overdue_days'] = 0
-                loan['current_fine'] = 0
+    total_fine    = 0
+    overdue_count = 0
+
+    for loan in active_loans:
+        due = datetime.strptime(loan['due_date'], '%Y-%m-%d')
+        if today > due:
+            loan['overdue_days'] = (today - due).days
+            loan['current_fine'] = loan['overdue_days'] * 5
+            total_fine          += loan['current_fine']
+            overdue_count       += 1
+        else:
+            loan['overdue_days'] = 0
+            loan['current_fine'] = 0
 
     return render_template('borrow_return.html',
                            active_loans=active_loans,
@@ -549,7 +548,19 @@ def user_dashboard():
 
     user_id = session['user_id']
     books   = db.query_db("SELECT * FROM books") or []
-    recs    = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4") or []
+
+    # Build safe recommendation objects with required fields for the template
+    raw_recs = db.query_db("SELECT * FROM books ORDER BY RANDOM() LIMIT 4") or []
+    recs = []
+    for r in raw_recs:
+        recs.append({
+            'id':               r['id'],
+            'title':            r['title'],
+            'author':           r['author'],
+            'image_url':        r.get('image_url'),
+            'score':            0,
+            'matched_keywords': [],
+        })
 
     active_count_row = db.query_db(
         "SELECT COUNT(*) as count FROM loans WHERE user_id = ? AND return_date IS NULL AND status != 'cancelled'",
@@ -571,6 +582,7 @@ def user_dashboard():
     return render_template('user.html',
                            books=books,
                            recommendations=recs,
+                           rec_reason="Randomly selected books you might enjoy.",
                            limit=5 - active_count,
                            total_fine=total_fine)
 
@@ -611,6 +623,7 @@ def transactions():
 # --- AI CHAT ---
 
 @app.route('/ai_chat', methods=['POST'])
+@login_required
 def ai_chat():
     data         = request.get_json()
     user_message = data.get('message', '').lower().strip()
